@@ -18,20 +18,27 @@ LITELLM_BASE_URL="${LITELLM_BASE_URL:-https://litellm.lib.ou.edu}"
 # NOTE: ids must match what the gateway reports at /v1/models — for these
 # models that's the literal strings below, spaces included.
 #
-# Course default is a large model on purpose. Small coder models cannot
-# reliably run a multi-step tool-using task: instead of failing they tend to
-# fabricate a result and report success. Qwen3 Coder 30B did exactly that on
-# the Ship Day assignment — invented search results, skipped the deploy, and
-# announced "Website Successfully Built!". It is kept only as a fallback for
-# when the primary is unavailable.
-LITELLM_MODEL="${LITELLM_MODEL:-Claude Sonnet 4.6}"
-LITELLM_MODEL_NAME="${LITELLM_MODEL_NAME:-Claude Sonnet 4.6 (OU LiteLLM)}"
+# Pick a model that can actually run a multi-step tool-using task. Small coder
+# models tend not to fail honestly: they fabricate a result and report success.
+# Qwen3 Coder 30B did exactly that on the Ship Day assignment — invented search
+# results, skipped the deploy, and announced "Website Successfully Built!".
+# That is why it is no longer the fallback here.
+#
+# Fall 2026: the Sandbox default is DeepSeek V4 Flash, chosen to match the
+# OpenRouter default (google/gemini-3.7-flash) as closely as the Sandbox
+# catalogue allows — same generation, Flash-class latency, long context, and
+# tool calling — so the no-cost path teaches the same lesson as the paid one.
+# Sonnet 5 and Opus 4.8 are also on the Sandbox and are stronger, but far more
+# expensive against a shared allocation. Override with LITELLM_MODEL=... if you
+# want one of those for a specific task.
+LITELLM_MODEL="${LITELLM_MODEL:-DeepSeek V4 Flash}"
+LITELLM_MODEL_NAME="${LITELLM_MODEL_NAME:-DeepSeek V4 Flash (OU AI Sandbox)}"
 # Optional comma-separated fallback model ids, PER PROVIDER. Fallbacks are
 # prefixed with the active provider, so a single shared list would produce
-# nonsense like "openrouter/Qwen3 Coder 30B" for an OpenRouter student.
+# nonsense like "openrouter/Kimi K2.7 Code" for an OpenRouter student.
 # Note the "-" rather than ":-": setting these to an empty string explicitly
 # means "no fallback", while leaving them unset takes the course default.
-LITELLM_MODEL_FALLBACKS="${LITELLM_MODEL_FALLBACKS-Qwen3 Coder 30B}"
+LITELLM_MODEL_FALLBACKS="${LITELLM_MODEL_FALLBACKS-Kimi K2.7 Code}"
 OPENROUTER_MODEL_FALLBACKS="${OPENROUTER_MODEL_FALLBACKS-qwen/qwen3.7-flash}"
 # Legacy single-list override. If set, it wins for whichever provider is
 # active — kept so existing env-var overrides keep working.
