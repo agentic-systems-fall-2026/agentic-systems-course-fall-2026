@@ -1,6 +1,6 @@
 # Agentic Systems Course Repo — SDI 4243/5243 (OU, Fall 2026)
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/jhassell/agentic-systems-course-fall-2026)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/agentic-systems-fall-2026/agentic-systems-course-fall-2026)
 
 Your personal course repository. Everything you build this semester lives here:
 five Build Challenges, your prompts, your Build Journal, and a CI eval gate. By
@@ -116,7 +116,7 @@ automatically, and plain `git pull` only syncs **your own** repo. If an
 update is announced, run (first time):
 
 ```bash
-git remote add upstream https://github.com/jhassell/agentic-systems-course-fall-2026
+git remote add upstream https://github.com/agentic-systems-fall-2026/agentic-systems-course-fall-2026
 git pull upstream main --allow-unrelated-histories
 ```
 

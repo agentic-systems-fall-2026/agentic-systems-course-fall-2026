@@ -15,7 +15,7 @@
 # version is always recoverable from git history.
 set -euo pipefail
 
-TEMPLATE_URL="https://github.com/jhassell/agentic-systems-course-fall-2026.git"
+TEMPLATE_URL="https://github.com/agentic-systems-fall-2026/agentic-systems-course-fall-2026.git"
 cd "$(git rev-parse --show-toplevel)"
 
 PUSH=0; ALL=0; PATHS=()
