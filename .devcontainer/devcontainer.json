@@ -1,0 +1,74 @@
+{
+  // OpenClaw Codespace — auto-installs OpenClaw and points it at the first
+  // working endpoint: OU LiteLLM Sandbox (if you have a key), else OpenRouter.
+  // See scripts/preflight.sh + scripts/configure.sh. Comments are allowed here.
+  //
+  // PREBUILD SUPPORT: the setup is split into two phases so GitHub Codespaces
+  // prebuilds can bake in the slow, secret-free work ahead of time:
+  //   onCreateCommand   → "setup.sh install"   (OpenClaw install, apt toolbelt,
+  //                       pip tooling, PATH) — runs during the prebuild.
+  //   postCreateCommand → "setup.sh configure" (writes ~/.openclaw config from
+  //                       your API-key secrets, keybindings, README badge) —
+  //                       always runs at codespace creation, never in prebuild,
+  //                       because user secrets are not available to prebuilds.
+  // Without a prebuild, both phases run back-to-back at creation, exactly as
+  // the old single-phase setup did. Manual retry still works: setup.sh (no
+  // argument) runs both phases.
+  "name": "Agentic Systems Course (OU LiteLLM + OpenRouter)",
+
+  // Node 22 LTS base (OpenClaw supports Node 22.14+; 24 is the upstream default).
+  // The installer will bump Node only if the base is too old.
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22-bookworm",
+
+  // Codespaces PROMPTS for these secrets at creation time if they aren't already
+  // saved in the user's account/repo secrets. They are injected as env vars.
+  "secrets": {
+    "LITELLM_API_KEY": {
+      "description": "NO-COST ALTERNATIVE. Your OU AI Sandbox key (starts with sk-), issued by the course on request. Fully supported. Leave blank if you are using OpenRouter, which is the course standard.",
+      "documentationUrl": "https://docs.openclaw.ai/providers/litellm"
+    },
+    "OPENROUTER_API_KEY": {
+      "description": "COURSE STANDARD - set this one. Your OWN OpenRouter API key (starts with sk-or-). Create the account and key at https://openrouter.ai (Settings -> Keys) and load the $20 of credit required for this course. Do NOT enable auto top-up. Default model: google/gemini-3.7-flash.",
+      "documentationUrl": "https://docs.openclaw.ai/providers/openrouter"
+    }
+  },
+
+  // OpenClaw Gateway + Control UI listen on 18789.
+  "forwardPorts": [18789],
+  "portsAttributes": {
+    "18789": {
+      "label": "OpenClaw Control UI",
+      "onAutoForward": "notify"
+    }
+  },
+
+  // Secret-free heavy lifting (OpenClaw install, apt toolbelt, pip tooling).
+  // Runs during prebuilds, so codespaces created from a prebuild skip it.
+  "onCreateCommand": "bash .devcontainer/setup.sh install",
+
+  // Runs once after the container is created: writes OpenClaw config from the
+  // user's secrets (not available during prebuilds) + small per-user touches.
+  "postCreateCommand": "bash .devcontainer/setup.sh configure",
+
+  // Runs on EVERY container start: makes sure the gateway is running even if
+  // VS Code's automatic tasks are blocked (folderOpen tasks sit behind a
+  // security gate, and some VS Code releases have blocked them outright).
+  // Idempotent and fully detached — never blocks startup. The "OpenClaw:
+  // Gateway" task detects the background gateway and tails its log instead
+  // of double-starting.
+  "postStartCommand": "bash scripts/gateway-daemon.sh",
+
+  "customizations": {
+    "vscode": {
+      // Machine-scoped settings applied inside the Codespace. This is the
+      // supported place to allow folderOpen tasks — the same setting in
+      // .vscode/settings.json (workspace scope) is IGNORED by VS Code for
+      // security (a repo can't self-approve its own automatic tasks).
+      "settings": {
+        "task.allowAutomaticTasks": "on"
+      }
+    }
+  },
+
+  "remoteUser": "node"
+}

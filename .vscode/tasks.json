@@ -1,0 +1,30 @@
+{
+  // Auto-start (on folder open): Gateway, then the TUI.
+  // On-demand (Command Palette → Tasks: Run Task): OpenClaw: Choose Model.
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "OpenClaw: Gateway",
+      "type": "shell",
+      "command": "bash '${workspaceFolder}/scripts/start-gateway.sh'",
+      "presentation": { "group": "openclaw", "panel": "dedicated", "reveal": "always", "focus": false },
+      "runOptions": { "runOn": "folderOpen" },
+      "problemMatcher": []
+    },
+    {
+      "label": "OpenClaw: TUI",
+      "type": "shell",
+      "command": "bash '${workspaceFolder}/scripts/start-tui.sh'",
+      "presentation": { "group": "openclaw", "panel": "dedicated", "reveal": "always", "focus": true },
+      "runOptions": { "runOn": "folderOpen" },
+      "problemMatcher": []
+    },
+    {
+      "label": "OpenClaw: Choose Model",
+      "type": "shell",
+      "command": "bash '${workspaceFolder}/scripts/select-model.sh'",
+      "presentation": { "group": "openclaw", "panel": "dedicated", "reveal": "always", "focus": true, "clear": true },
+      "problemMatcher": []
+    }
+  ]
+}

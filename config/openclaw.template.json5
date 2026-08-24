@@ -1,0 +1,41 @@
+// OpenClaw configuration template.
+// scripts/configure.sh renders this to ~/.openclaw/openclaw.json (JSON5),
+// substituting the placeholder tokens below. Full reference:
+//   https://docs.openclaw.ai/gateway/configuration
+//
+// NOTE: OpenClaw uses STRICT schema validation — unknown keys make the gateway
+// refuse to start. Keep edits within documented fields.
+{
+  // Local single-node gateway. mode=local + bind=loopback for Codespaces; a
+  // persisted client token (from ~/.openclaw/.env) lets the TUI authenticate.
+  gateway: { mode: "local", bind: "loopback", auth: { mode: "token", token: "${OPENCLAW_GATEWAY_TOKEN}" } },
+
+  // Two endpoints are available; the default model (agents.defaults.model,
+  // rendered below) points at whichever one preflight validated — OU LiteLLM
+  // Sandbox first, else OpenRouter. OpenRouter is a native OpenClaw provider
+  // (picks up OPENROUTER_API_KEY from ~/.openclaw/.env; nothing to declare
+  // here). The block below declares the OU LiteLLM Sandbox (OpenAI-compatible).
+  models: {
+    providers: {
+      litellm: {
+        baseUrl: "@@BASE_URL@@",
+        // Resolved at load time from ~/.openclaw/.env (never hard-code the key here).
+        apiKey: "${LITELLM_API_KEY}",
+        api: "openai-completions",
+        // Rendered by scripts/configure.sh: the default model plus every
+        // configured fallback. Every model referenced in agents.defaults.model
+        // must be declared here or the gateway will not resolve it.
+        models: [
+@@LITELLM_MODELS@@
+        ],
+      },
+    },
+  },
+
+  agents: {
+    defaults: {
+      model: @@MODEL_BLOCK@@,
+      workspace: "~/.openclaw/workspace",
+    },
+  },
+}

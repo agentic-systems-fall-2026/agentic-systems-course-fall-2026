@@ -1,0 +1,19 @@
+# Local secrets / state — never commit these
+.env
+.env.local
+.openclaw/
+
+# Node / build noise
+node_modules/
+npm-debug.log*
+*.log
+
+# OS cruft
+.DS_Store
+
+# course
+.cache/
+.checkpoints/
+*.log
+__pycache__/
+*.pyc

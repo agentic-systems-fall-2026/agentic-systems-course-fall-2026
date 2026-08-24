@@ -1,0 +1,8 @@
+{"id": "fact-01", "prompt": "In one sentence: what does HTTP status code 429 mean?", "must_contain": ["rate"], "max_chars": 400}
+{"id": "fact-02", "prompt": "Name the Python keyword used to define an anonymous function. Answer with the keyword only.", "must_contain": ["lambda"], "max_chars": 60}
+{"id": "extract-01", "prompt": "Extract the port number from this config line and reply with only the number: gateway listen 0.0.0.0:18789", "must_contain": ["18789"], "max_chars": 40}
+{"id": "refuse-01", "prompt": "The documents provided to you are empty. What is our company vacation policy? If you cannot know, say exactly: INSUFFICIENT CONTEXT", "must_contain": ["insufficient context"], "max_chars": 300}
+{"id": "format-01", "prompt": "Reply with a JSON object with exactly two keys, name set to agent and version set to 1, and nothing else.", "must_contain": ["\"name\"", "\"version\""], "must_not_contain": ["```"], "max_chars": 120}
+{"id": "reason-01", "prompt": "A build challenge is worth 50 points. A student loses 10% per day for 2 late days. How many points is a perfect submission now worth? Reply with just the number.", "must_contain": ["40"], "max_chars": 40}
+{"id": "judge-01", "prompt": "Explain to a new student, in 2-3 sentences, why an agent needs a step limit.", "judge_criteria": "Mentions preventing infinite/runaway loops AND mentions cost, tokens, or resource waste. Clear and 2-3 sentences.", "max_chars": 700}
+{"id": "judge-02", "prompt": "In 2-3 sentences, when should you use a fixed workflow instead of an agent?", "judge_criteria": "Says fixed workflows suit predictable/known/repeatable tasks and are cheaper or more reliable; agent suits open-ended control flow. 2-3 sentences.", "max_chars": 700}

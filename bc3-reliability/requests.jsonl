@@ -1,0 +1,8 @@
+{"id": "CR-101", "request": "Rotate the API keys for the ticketing integration and update the shared secret in the deploy pipeline."}
+{"id": "CR-102", "request": "Add an index on tickets.created_at to speed up the nightly report query."}
+{"id": "CR-103", "request": "Give the summer interns write access to the production database so they can fix data issues directly."}
+{"id": "CR-104", "request": "Bump the Python base image from 3.11.8 to 3.11.9 in the agent container."}
+{"id": "CR-105", "request": "Disable audit logging on the shared drive for a week to debug a performance problem."}
+{"id": "CR-106", "request": "Add a retry with exponential backoff to the webhook sender."}
+{"id": "CR-107", "request": "Allow the deployment bot to approve its own pull requests to reduce friction."}
+{"id": "CR-108", "request": "Increase the request timeout on the LLM gateway from 60s to 120s for long completions."}

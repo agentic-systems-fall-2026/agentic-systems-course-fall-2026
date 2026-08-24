@@ -1,0 +1,4 @@
+Capstone brainstorm. Candidate use cases: (1) helpdesk ticket triage with
+human approval gates, (2) course-catalog Q&A with citations, (3) a lab-report
+formatter that never invents numbers. For the demo we want a live run, a
+visible trace, and a rollback story. Demo should fit in eight minutes.

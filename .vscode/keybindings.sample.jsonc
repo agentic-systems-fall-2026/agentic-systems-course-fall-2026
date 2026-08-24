@@ -1,0 +1,14 @@
+// OpenClaw Codespace — optional keyboard shortcut for the model picker.
+// VS Code keybindings are USER-scoped (not per-workspace), so this file is a
+// reference copy. setup.sh installs it into your VS Code user keybindings ONLY
+// if you don't already have a keybindings.json (so it never clobbers yours).
+//
+// Manual install: Command Palette → "Preferences: Open Keyboard Shortcuts (JSON)" → paste the entry below.
+[
+  {
+    "key": "ctrl+alt+m",
+    "mac": "cmd+alt+m",
+    "command": "workbench.action.tasks.runTask",
+    "args": "OpenClaw: Choose Model"
+  }
+]

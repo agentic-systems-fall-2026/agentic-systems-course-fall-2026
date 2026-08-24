@@ -1,0 +1,38 @@
+# CI regression gate (Build Challenge 4).
+#
+# Runs your eval harness on every push: a SMALL live sweep (default 5 cases,
+# temperature 0, response caching on) against your course endpoint — the OU
+# LiteLLM Sandbox if a LITELLM_API_KEY secret is set, else OpenRouter via
+# OPENROUTER_API_KEY. If neither repository secret is set yet (pre-BC4), the
+# job passes with a notice instead of failing — set one when you reach BC4:
+#   repo Settings → Secrets and variables → Actions → New repository secret
+#
+# Key hygiene is graded: the key lives ONLY in the secret. Never commit it.
+name: eval-regression-gate
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  evals:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      LITELLM_API_KEY: ${{ secrets.LITELLM_API_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      EVAL_LIVE_N: "5"          # cap the sweep — a push should cost pennies
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install test runner
+        run: python -m pip install -q pytest
+      - name: Run eval regression gate
+        run: |
+          if [ -z "$LITELLM_API_KEY" ] && [ -z "$OPENROUTER_API_KEY" ]; then
+            echo "::notice::No endpoint secret set (LITELLM_API_KEY or OPENROUTER_API_KEY) — eval gate skipped (required from BC4 onward)."
+            exit 0
+          fi
+          python -m pytest bc4-evals -q
