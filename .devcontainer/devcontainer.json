@@ -14,7 +14,16 @@
   // Without a prebuild, both phases run back-to-back at creation, exactly as
   // the old single-phase setup did. Manual retry still works: setup.sh (no
   // argument) runs both phases.
-  "name": "Agentic Systems Course (OU LiteLLM + OpenRouter)",
+  "name": "Agentic Systems Course (OpenRouter + OU AI Sandbox)",
+
+  // Minimum machine spec. Agent loops plus a gateway on 2 cores is painful;
+  // 4 cores was the fix we landed on last term, so make it the floor rather
+  // than something each student has to remember to select.
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "8gb",
+    "storage": "32gb"
+  },
 
   // Node 22 LTS base (OpenClaw supports Node 22.14+; 24 is the upstream default).
   // The installer will bump Node only if the base is too old.

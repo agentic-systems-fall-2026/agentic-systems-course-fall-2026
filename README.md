@@ -40,9 +40,20 @@ Email me and I will issue you a Sandbox key (it starts with `sk-`).
    (the Sandbox alternative). If you set both, OpenRouter wins. Then click
    **Create codespace**. Forgot? No problem — the Gateway terminal will ask
    you for a key on first start.
-3. When VS Code asks **"Do you want to allow automatic tasks…?"**, click
+3. Leave **Machine type** at **4-core**. The repo asks for it deliberately:
+   an agent loop plus a gateway on 2 cores is slow enough to waste your time.
+4. When VS Code asks **"Do you want to allow automatic tasks…?"**, click
    **Allow**. Do not let it time out. See the next section for why.
-4. Smoke test: `python3 bc1-tools/agent.py "what do my notes say about the demo?"`
+5. Smoke test: `python3 bc1-tools/agent.py "what do my notes say about the demo?"`
+
+> **On the secrets step.** GitHub only shows the key fields on the **New with
+> options…** path — the plain green "Create codespace" button skips them
+> entirely. If you have never saved these secrets before you'll see two text
+> boxes; if you've used them in another repo you'll see checkboxes instead.
+> Either way, entering a value is optional and the codespace will build
+> without one — the Gateway terminal will then ask you for a key on first
+> start, or you can run `bash scripts/set-key.sh` yourself. Nothing is broken
+> if you skip it; you just get asked later.
 
 ## What happens when your Codespace boots
 
