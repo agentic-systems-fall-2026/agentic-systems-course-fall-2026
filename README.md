@@ -162,12 +162,14 @@ labs, agent state), `tmux` (keep long-running agents alive — BC3),
 
 ## Model notes
 
-Default: **`Claude Sonnet 4.6` on the OU LiteLLM Sandbox**, with
-`Qwen3 Coder 30B` as an automatic fallback if the primary is unavailable. On
-OpenRouter the default is `google/gemini-3.7-flash`. The Codespace picks the endpoint
-from your key(s) at startup (OpenRouter first).
+Defaults, by endpoint. On **OpenRouter** (the course standard):
+`google/gemini-3.7-flash`, with `qwen/qwen3.7-flash` as the automatic fallback.
+On the **OU AI Sandbox** (the no-cost alternative): `DeepSeek V4 Flash`, with
+`Kimi K2.7 Code` as the fallback. The two are deliberately matched in class, so
+whichever endpoint you use, you are learning the same thing. The Codespace picks
+the endpoint from your key(s) at startup (OpenRouter first).
 
-**Why a large model by default.** Most of what you build this term is
+**Why a capable model by default.** Most of what you build this term is
 multi-step tool use: call a tool, read the result, decide what to do next,
 recover when something fails. Small coder models are not reliable at that, and
 the way they fail is the problem — instead of stopping with an error, they tend
@@ -177,8 +179,8 @@ a real web search with five fabricated results, never deployed anything, and
 finished with "Website Successfully Built!" above a list of green checkmarks
 for work it had not done.
 
-That is worth knowing for its own sake — it is the failure mode Day 13
-(observability) and Day 14 (human oversight) are about. It is also why the
+That is worth knowing for its own sake — it is the failure mode Session 11
+(observability) and Session 12 (human oversight) are about. It is also why the
 fallback matters: **if your agent starts inventing things or claiming it cannot
 reach the network, check which model is actually answering.** You may have
 failed over. The active model is shown in the TUI status bar.
@@ -189,7 +191,7 @@ the same for your fallback, which you can decline. Primary and fallback may
 come from different providers. To set one directly:
 
 ```bash
-openclaw models set "litellm/Claude Sonnet 4.6"
+openclaw models set "openrouter/google/gemini-3.7-flash"
 openclaw models status
 ```
 
