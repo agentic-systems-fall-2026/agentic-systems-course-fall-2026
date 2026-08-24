@@ -26,17 +26,21 @@ import time
 import urllib.error
 import urllib.request
 
+# Endpoint precedence must match scripts/preflight.sh and scripts/configure.sh:
+# OpenRouter is the course standard, the OU AI Sandbox is the no-cost
+# alternative. Defaults are matched in class across both.
+_OR_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 _LL_KEY = os.environ.get("LITELLM_API_KEY", "")
-if _LL_KEY and _LL_KEY != "sk-REPLACE_ME":
-    PROVIDER = "OU LiteLLM Sandbox"
-    _KEY_VAR = "LITELLM_API_KEY"
-    BASE = os.environ.get("LITELLM_BASE_URL", "https://litellm.lib.ou.edu")
-    DEFAULT_MODEL = os.environ.get("COURSE_MODEL", "Qwen3 Coder 30B")
-else:
+if _OR_KEY and _OR_KEY != "sk-or-REPLACE_ME":
     PROVIDER = "OpenRouter"
     _KEY_VAR = "OPENROUTER_API_KEY"
     BASE = os.environ.get("OPENROUTER_BASE_URL", "https://openrouter.ai/api")
-    DEFAULT_MODEL = os.environ.get("COURSE_MODEL", "qwen/qwen3-coder")
+    DEFAULT_MODEL = os.environ.get("COURSE_MODEL", "google/gemini-3.7-flash")
+else:
+    PROVIDER = "OU AI Sandbox"
+    _KEY_VAR = "LITELLM_API_KEY"
+    BASE = os.environ.get("LITELLM_BASE_URL", "https://litellm.lib.ou.edu")
+    DEFAULT_MODEL = os.environ.get("COURSE_MODEL", "DeepSeek V4 Flash")
 CACHE_DIR = pathlib.Path(__file__).resolve().parents[1] / ".cache" / "llm"
 
 STATS = {"calls": 0, "tokens": 0, "cache_hits": 0}
