@@ -15,7 +15,7 @@ Template per entry:
 
 ---
 
-## Day 1 — Lab 0 (example format; replace with your own)
+## Session 1 — Lab 0 (example format; replace with your own)
 - **What I built:** connected my Codespace to OpenRouter and ran the end-to-end demo.
 - **What failed:** first run rejected my key — I had pasted it with a trailing space.
 - **What I changed:** re-ran `bash scripts/set-key.sh` and re-ran the gateway task.

@@ -12,9 +12,9 @@ Usage (from any bc*/ script):
     print(STATS)  # {'calls': 1, 'tokens': 123}
 
 Features you will need across the course:
-  - STATS: running call/token counts (Day 9 cost lab & BC4 sweeps read these)
+  - STATS: running call/token counts (Session 7 cost lab & BC4 sweeps read these)
   - cache=True: disk cache keyed on the exact request (BC4 requires caching;
-    it is also the biggest lever in the Day 9 cost-cut exercise)
+    it is also the biggest lever in the Session 7 cost-cut exercise)
   - model=...: route a call to a cheaper model (on LiteLLM: an id from the
     Sandbox catalog; on OpenRouter: any slug from openrouter.ai/models)
 """

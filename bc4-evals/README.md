@@ -26,7 +26,7 @@ by the same kind of model it evaluates, unchecked, is circular.)
    *repository secret* (Settings → Secrets and variables → Actions). The
    included workflow then runs a small live sweep (~5 cases, temp 0, cached,
    capped so a push costs pennies) on every push. Never commit the key — key
-   hygiene is part of the grade and previews Day 11.
+   hygiene is part of the grade and previews Session 9.
 
 **Acceptance check.** Sweep report with pass rate vs. threshold + judge
 calibration numbers; a link to a **green** Actions run; and a link to one

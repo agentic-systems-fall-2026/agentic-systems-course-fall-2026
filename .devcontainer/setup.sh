@@ -85,7 +85,7 @@ step "Install 4/4 — Course toolbelt (tunnels, JSON, recording, and friends)"
 sudo apt-get update -qq || true
 sudo apt-get install -y -qq jq sqlite3 tmux ripgrep httpie asciinema netcat-openbsd tree htop entr 2>/dev/null || true
 
-# cloudflared — quick tunnels to share your demo (Day 15, capstone):
+# cloudflared — quick tunnels to share your demo (Session 12, capstone):
 #   cloudflared tunnel --url http://localhost:5000
 if ! command -v cloudflared >/dev/null 2>&1; then
   curl -fsSL -o /tmp/cloudflared.deb \

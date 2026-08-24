@@ -199,4 +199,4 @@ The quotes matter — these model ids contain spaces. Changes apply to new
 sessions; inside a chat you are already in, switch with `/model`.
 
 **Per-call routing.** Send individual calls to cheaper models with
-`chat(..., model=...)` — you'll use that in the Day 9 cost lab.
+`chat(..., model=...)` — you'll use that in the Session 7 cost lab.

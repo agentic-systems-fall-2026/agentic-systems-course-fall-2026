@@ -26,7 +26,7 @@ in `data/`, printing a full trace each step. One tool
    paste in all of `agent.py`, then:
    > *Add these tools to this agent. Only change `TOOLS_SPEC` and
    > `run_tool` — nothing else. Here are my specs: …*
-   Scoped instructions plus a contract — that's Day 2's delegation lesson
+   Scoped instructions plus a contract — that's Session 2's delegation lesson
    applied to your own toolchain.
 
 3. **Verify.** Run `python3 bc1-tools/check.py` — it calls each tool in your
