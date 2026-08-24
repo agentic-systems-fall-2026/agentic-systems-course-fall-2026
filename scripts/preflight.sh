@@ -96,7 +96,8 @@ echo "${VALID}" > "${OK_FILE}"
 echo "ok" > "${STATUS}"
 if [[ "${PREFERRED}" == "litellm" ]]; then
   extra=""; [[ "${VALID}" == *openrouter* ]] && extra=" — OpenRouter key also valid (switch any time: bash scripts/select-model.sh)"
-  echo "▶️  Endpoint: OU AI Sandbox (no-cost alternative)${extra}"
+  echo "▶️  Endpoint: OU AI Sandbox (the no-cost alternative)${extra}"
 else
-  echo "▶️  Endpoint: OpenRouter (no working OU LiteLLM key found)"
+  extra=""; [[ "${VALID}" == *litellm* ]] && extra=" — OU AI Sandbox key also valid (switch any time: bash scripts/select-model.sh)"
+  echo "▶️  Endpoint: OpenRouter (the course standard)${extra}"
 fi
