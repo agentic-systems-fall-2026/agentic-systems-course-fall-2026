@@ -9,7 +9,7 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_env.sh" 2>/dev/null || tr
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 echo "════════════════════════════════════════════════════"
-echo "  OpenClaw Gateway  (OU LiteLLM first, OpenRouter fallback)"
+echo "  OpenClaw Gateway  (OpenRouter first, OU AI Sandbox fallback)"
 echo "════════════════════════════════════════════════════"
 
 # If a gateway is already up or being started in the background (by the
@@ -41,7 +41,7 @@ until bash "${REPO_DIR}/scripts/preflight.sh"; do
      && [[ "${reason}" == "nokey" || "${reason}" == "invalid" ]] && (( _pf_tries <= 3 )); then
     echo
     echo "🔑  Let's fix that right now (attempt ${_pf_tries}/3) — paste ONE key:"
-    echo "    • OU LiteLLM Sandbox key (starts with sk-) — first choice, from your Sandbox invitation"
+    echo "    • OU AI Sandbox key (starts with sk-) — the no-cost alternative, from your Sandbox invitation"
     echo "    • OpenRouter key (starts with sk-or-) — also works, from openrouter.ai → Settings → Keys"
     if ! bash "${REPO_DIR}/scripts/set-key.sh"; then
       echo "⛔  No key entered — gateway not started. Run 'bash scripts/set-key.sh' any time, then re-run this task."

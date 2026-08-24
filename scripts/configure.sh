@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Render ~/.openclaw/openclaw.json and ~/.openclaw/.env.
-# Two endpoints: OU LiteLLM Sandbox (first choice, if you have a key) and
+# Two endpoints: OpenRouter (course standard, if you have a key) and
 # OpenRouter (your own key). The default model points at whichever endpoint
 # preflight validated (or, before preflight has run, whichever key is present —
 # OpenRouter preferred). Override with OPENCLAW_PROVIDER=litellm|openrouter.
@@ -13,7 +13,7 @@ set -euo pipefail
 # Default OpenRouter model slug (cheap open model for routine agent loops).
 # Verify the current slug at https://openrouter.ai/models before the term.
 OPENCLAW_MODEL="${OPENCLAW_MODEL:-google/gemini-3.7-flash}"
-# OU LiteLLM Sandbox endpoint (first choice when you have a key).
+# OU AI Sandbox endpoint (no-cost alternative).
 LITELLM_BASE_URL="${LITELLM_BASE_URL:-https://litellm.lib.ou.edu}"
 # NOTE: ids must match what the gateway reports at /v1/models — for these
 # models that's the literal strings below, spaces included.
@@ -84,7 +84,7 @@ chmod 600 "${ENV_FILE}"
 
 # Which endpoint should the default model use?
 # OPENCLAW_PROVIDER env > preflight's ~/.openclaw/.provider > key presence
-# (LiteLLM preferred — it's the course's first choice).
+# (OpenRouter preferred — it's the course standard).
 PROVIDER="${OPENCLAW_PROVIDER:-}"
 if [[ -z "${PROVIDER}" && -f "${STATE_DIR}/.provider" ]]; then
   PROVIDER="$(cat "${STATE_DIR}/.provider" 2>/dev/null || true)"

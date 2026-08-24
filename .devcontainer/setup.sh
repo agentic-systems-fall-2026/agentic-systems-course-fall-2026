@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Codespace setup: install OpenClaw and configure it for OU LiteLLM / OpenRouter.
+# Codespace setup: install OpenClaw and configure it for OpenRouter / OU AI Sandbox.
 # No onboarding wizard — the gateway + TUI auto-start when the Codespace opens.
 #
 # PHASES (for GitHub Codespaces prebuild support):
@@ -122,7 +122,7 @@ if [[ "${PHASE}" == "configure" || "${PHASE}" == "all" ]]; then
 
 export PATH="${HOME}/.local/bin:${HOME}/.npm-global/bin:/usr/local/share/npm-global/bin:${PATH}"
 
-step "Configure 1/3 — Write OpenClaw config (OU LiteLLM first, else OpenRouter) (~/.openclaw/openclaw.json)"
+step "Configure 1/3 — Write OpenClaw config (OpenRouter first, else OU AI Sandbox) (~/.openclaw/openclaw.json)"
 bash "${REPO_DIR}/scripts/configure.sh" || true
 
 step "Configure 2/3 — Model-picker keyboard shortcut (Ctrl/Cmd+Alt+M, best-effort)"

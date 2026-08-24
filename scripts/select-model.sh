@@ -53,7 +53,7 @@ if (( ! HAVE_OR && ! HAVE_LL )); then
   echo "❌ No model provider key found."
   echo
   echo "   You need at least one of:"
-  echo "     • OU AI Sandbox key (LITELLM_API_KEY) — the course's first choice, no per-token cost."
+  echo "     • OU AI Sandbox key (LITELLM_API_KEY) — the no-cost alternative."
   echo "     • Your own OpenRouter key (OPENROUTER_API_KEY) — https://openrouter.ai (Settings → Keys)."
   echo
   echo "   Set one with: bash scripts/set-key.sh"

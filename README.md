@@ -165,7 +165,7 @@ labs, agent state), `tmux` (keep long-running agents alive — BC3),
 Default: **`Claude Sonnet 4.6` on the OU LiteLLM Sandbox**, with
 `Qwen3 Coder 30B` as an automatic fallback if the primary is unavailable. On
 OpenRouter the default is `google/gemini-3.7-flash`. The Codespace picks the endpoint
-from your key(s) at startup (LiteLLM first).
+from your key(s) at startup (OpenRouter first).
 
 **Why a large model by default.** Most of what you build this term is
 multi-step tool use: call a tool, read the result, decide what to do next,
