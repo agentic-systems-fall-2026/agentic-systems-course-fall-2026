@@ -12,7 +12,7 @@ set -euo pipefail
 # ---- Settings (override via env if your model/endpoint differ) ----
 # Default OpenRouter model slug (cheap open model for routine agent loops).
 # Verify the current slug at https://openrouter.ai/models before the term.
-OPENCLAW_MODEL="${OPENCLAW_MODEL:-z-ai/glm-5.3-flash}"
+OPENCLAW_MODEL="${OPENCLAW_MODEL:-google/gemini-3.7-flash}"
 # OU AI Sandbox endpoint (no-cost alternative).
 LITELLM_BASE_URL="${LITELLM_BASE_URL:-https://litellm.lib.ou.edu}"
 # NOTE: ids must match what the gateway reports at /v1/models — for these
@@ -25,7 +25,7 @@ LITELLM_BASE_URL="${LITELLM_BASE_URL:-https://litellm.lib.ou.edu}"
 # That is why it is no longer the fallback here.
 #
 # Fall 2026: the Sandbox default is DeepSeek V4 Flash, chosen to match the
-# OpenRouter default (z-ai/glm-5.3-flash) as closely as the Sandbox
+# OpenRouter default (google/gemini-3.7-flash) as closely as the Sandbox
 # catalogue allows — same generation, Flash-class latency, long context, and
 # tool calling — so the no-cost path teaches the same lesson as the paid one.
 # Sonnet 5 and Opus 4.8 are also on the Sandbox and are stronger, but far more
