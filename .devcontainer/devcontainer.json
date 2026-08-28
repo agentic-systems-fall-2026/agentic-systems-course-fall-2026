@@ -37,7 +37,7 @@
       "documentationUrl": "https://docs.openclaw.ai/providers/litellm"
     },
     "OPENROUTER_API_KEY": {
-      "description": "COURSE STANDARD - set this one. Your OWN OpenRouter API key (starts with sk-or-). Create the account and key at https://openrouter.ai (Settings -> Keys) and load the $20 of credit required for this course. Do NOT enable auto top-up. Default model: google/gemini-3.7-flash.",
+      "description": "COURSE STANDARD - set this one. Your OWN OpenRouter API key (starts with sk-or-). Create the account and key at https://openrouter.ai (Settings -> Keys) and load the $20 of credit required for this course. Do NOT enable auto top-up. Default model: z-ai/glm-5.3-flash.",
       "documentationUrl": "https://docs.openclaw.ai/providers/openrouter"
     }
   },
