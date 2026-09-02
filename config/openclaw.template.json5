@@ -32,6 +32,13 @@
     },
   },
 
+  // Web-search provider plugins are not part of this course, and since
+  // OpenClaw 2026.8.1 the Perplexity provider (auto-selected whenever an
+  // OpenRouter key is present) demands interactive capability consent that a
+  // non-interactive Codespace build cannot give, which stops the gateway from
+  // starting. Deny it outright; Ship Day uses Tavily from Python, not this.
+  plugins: { deny: ["perplexity"] },
+
   agents: {
     defaults: {
       model: @@MODEL_BLOCK@@,
