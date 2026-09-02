@@ -9,15 +9,33 @@
 # before each attempt, verify the install actually loads, and retry if not.
 set -uo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Pin the OpenClaw release. The official installer defaults to npm "latest",
+# which means every new Codespace gets whatever shipped that morning. On
+# 2026-08-31 that broke the course: 2026.8.1 moved web-search providers out of
+# the bundle and made them require interactive capability consent, and our
+# non-interactive setup cannot grant it, so the gateway refused to start for
+# every OpenRouter student ("Plugin perplexity requires capability consent").
+# 2026.6.34 is the npm extended-stable tag and the version that ran Session 1.
+# Override with OPENCLAW_VERSION_PIN=<version|dist-tag> when deliberately
+# moving the course forward; test in a fresh Codespace first.
+OPENCLAW_VERSION_PIN="${OPENCLAW_VERSION_PIN:-2026.6.34}"
 # shellcheck disable=SC1091
 source "${HERE}/_env.sh" 2>/dev/null || true
 
-# Healthy = on PATH, real version (not 0.0.0), and the module graph actually loads.
+# Healthy = on PATH, the pinned version (not 0.0.0, not some other release),
+# and the module graph actually loads.
 integrity_ok() {
   command -v openclaw >/dev/null 2>&1 || return 1
   local v out
   v="$(openclaw --version 2>/dev/null || true)"
   case "${v}" in *0.0.0*|"") return 1 ;; esac
+  # A dist-tag pin (e.g. extended-stable) cannot be compared to a version
+  # string, so only enforce the match when the pin looks like a version.
+  if [[ "${OPENCLAW_VERSION_PIN}" =~ ^[0-9] ]] && [[ "${v}" != *"${OPENCLAW_VERSION_PIN}"* ]]; then
+    echo "OpenClaw ${v} is installed but the course pins ${OPENCLAW_VERSION_PIN}; reinstalling."
+    return 1
+  fi
   out="$(openclaw --help 2>&1 || true)"
   case "${out}" in *"Cannot find module"*|*ERR_MODULE_NOT_FOUND*) return 1 ;; esac
   return 0
@@ -41,7 +59,7 @@ for attempt in 1 2 3; do
   npm cache clean --force >/dev/null 2>&1 || true
 
   OPENCLAW_NO_ONBOARD=1 OPENCLAW_NO_PROMPT=1 \
-    bash -c 'curl -fsSL --proto "=https" --tlsv1.2 https://openclaw.ai/install.sh | bash -s -- --no-onboard --no-prompt' || true
+    bash -c 'curl -fsSL --proto "=https" --tlsv1.2 https://openclaw.ai/install.sh | bash -s -- --no-onboard --no-prompt --version "$1"' _ "${OPENCLAW_VERSION_PIN}" || true
 
   # shellcheck disable=SC1091
   source "${HERE}/_env.sh" 2>/dev/null || true
@@ -53,5 +71,5 @@ for attempt in 1 2 3; do
 done
 
 echo "✗ OpenClaw install failed after 3 clean attempts."
-echo "  Manual: npm rm -g openclaw; npm cache clean --force; curl -fsSL https://openclaw.ai/install.sh | bash -s -- --no-onboard --no-prompt"
+echo "  Manual: npm rm -g openclaw; npm cache clean --force; curl -fsSL https://openclaw.ai/install.sh | bash -s -- --no-onboard --no-prompt --version ${OPENCLAW_VERSION_PIN}"
 exit 1
