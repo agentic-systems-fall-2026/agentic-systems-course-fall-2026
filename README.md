@@ -80,7 +80,7 @@ Allowing automatic tasks once covers every future open.
 
 ## Models
 
-The default is **`google/gemini-3.7-flash`** — a 1M-token context window, solid
+The default is **`google/gemini-3.8-flash`** — a 1M-token context window, solid
 tool calling, and cheap enough that $20 covers the whole term. The configured
 fallback is `qwen/qwen3.7-flash`, which is cheaper still.
 
@@ -163,7 +163,7 @@ labs, agent state), `tmux` (keep long-running agents alive — BC3),
 ## Model notes
 
 Defaults, by endpoint. On **OpenRouter** (the course standard):
-`google/gemini-3.7-flash`, with `qwen/qwen3.7-flash` as the automatic fallback.
+`google/gemini-3.8-flash`, with `qwen/qwen3.7-flash` as the automatic fallback.
 On the **OU AI Sandbox** (the no-cost alternative): `DeepSeek V4 Flash`, with
 `Kimi K2.7 Code` as the fallback. The two are deliberately matched in class, so
 whichever endpoint you use, you are learning the same thing. The Codespace picks
@@ -191,7 +191,7 @@ the same for your fallback, which you can decline. Primary and fallback may
 come from different providers. To set one directly:
 
 ```bash
-openclaw models set "openrouter/google/gemini-3.7-flash"
+openclaw models set "openrouter/google/gemini-3.8-flash"
 openclaw models status
 ```
 

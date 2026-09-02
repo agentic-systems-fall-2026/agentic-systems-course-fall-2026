@@ -35,7 +35,7 @@ if _OR_KEY and _OR_KEY != "sk-or-REPLACE_ME":
     PROVIDER = "OpenRouter"
     _KEY_VAR = "OPENROUTER_API_KEY"
     BASE = os.environ.get("OPENROUTER_BASE_URL", "https://openrouter.ai/api")
-    DEFAULT_MODEL = os.environ.get("COURSE_MODEL", "google/gemini-3.7-flash")
+    DEFAULT_MODEL = os.environ.get("COURSE_MODEL", "google/gemini-3.8-flash")
 else:
     PROVIDER = "OU AI Sandbox"
     _KEY_VAR = "LITELLM_API_KEY"
