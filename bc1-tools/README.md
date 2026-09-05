@@ -1,4 +1,4 @@
-# Build Challenge 1 — Tool/Function Calling (50 pts, due Wed Jul 15, 11:59 PM CT)
+# Build Challenge 1 — Tool/Function Calling (50 pts, due Fri Sep 18, 11:59 PM CT)
 
 **Objective.** Design 2–3 custom tools for your agent, get them working, and
 trace a tool call end-to-end (request → tool spec → call → result → final
