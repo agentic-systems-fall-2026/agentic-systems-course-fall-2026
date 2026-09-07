@@ -186,10 +186,12 @@ fallback matters: **if your agent starts inventing things or claiming it cannot
 reach the network, check which model is actually answering.** You may have
 failed over. The active model is shown in the TUI status bar.
 
-**Switching models.** Run `scripts/select-model.sh` (or `Ctrl/Cmd+Alt+M`). It
-asks which provider you want for your primary, shows that catalog, then asks
-the same for your fallback, which you can decline. Primary and fallback may
-come from different providers. To set one directly:
+**Switching models.** Run `scripts/select-model.sh` (or `Ctrl/Cmd+Alt+M`). If
+both an OpenRouter key and a Sandbox key are set, it asks which provider you
+want for your primary, shows that catalog, then asks the same for your
+fallback, which you can decline; primary and fallback may come from different
+providers. With only one key set it skips the provider question and goes
+straight to that provider's catalog. To set one directly:
 
 ```bash
 openclaw models set "openrouter/google/gemini-3.8-flash"

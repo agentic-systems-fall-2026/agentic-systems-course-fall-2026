@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Render ~/.openclaw/openclaw.json and ~/.openclaw/.env.
-# Two endpoints: OpenRouter (course standard, if you have a key) and
-# OpenRouter (your own key). The default model points at whichever endpoint
+# Two endpoints: OpenRouter (course standard, your own key) and the OU AI
+# Sandbox (LiteLLM, no-cost alternative). The default model points at whichever endpoint
 # preflight validated (or, before preflight has run, whichever key is present —
 # OpenRouter preferred). Override with OPENCLAW_PROVIDER=litellm|openrouter.
 # Usage: scripts/configure.sh [OPENROUTER_API_KEY]
