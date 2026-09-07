@@ -3,7 +3,7 @@
 One short entry per build — all five Build Challenges plus the smaller daily
 builds. Four to eight sentences each: this is a lab notebook, not an essay.
 It is also your AI-use disclosure record for the course. Graded on
-completeness and honesty about failures, not polish. (50 pts, due Aug 6.)
+completeness and honesty about failures, not polish. (50 pts, due Fri Dec 11, 11:59 PM CT.)
 
 Template per entry:
 

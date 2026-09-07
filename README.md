@@ -31,8 +31,9 @@ Email me and I will issue you a Sandbox key (it starts with `sk-`).
 
 ## Get started (once)
 
-1. Click **Use this template → Create a new repository** (your account;
-   private is fine). Do **not** fork.
+1. Accept the **GitHub Classroom** assignment linked in Canvas. Classroom
+   creates your repository for you. Do **not** fork, and do not use "Use this
+   template" — a repository made that way is not connected to the course.
 2. On your new repo: **Code → Codespaces → the "···" menu → New with
    options…** — skip the plain "Create codespace" button, because it does not
    prompt for secrets. The creation page shows two **Recommended secrets**.

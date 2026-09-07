@@ -1,8 +1,8 @@
 """Shared LLM client for all Build Challenges. Stdlib only — no pip installs.
 
 Endpoint auto-detect (matches the Codespace's gateway behavior):
-  1. OU LiteLLM Sandbox — used when LITELLM_API_KEY is set (first choice)
-  2. OpenRouter        — used otherwise (your own OPENROUTER_API_KEY)
+  1. OpenRouter        — used when OPENROUTER_API_KEY is set (course standard)
+  2. OU LiteLLM Sandbox — used otherwise (your OU AI Sandbox key)
 
 Usage (from any bc*/ script):
     import sys, pathlib; sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
@@ -61,6 +61,12 @@ def chat(messages, model=DEFAULT_MODEL, max_tokens=700, temperature=0,
     """One chat completion against the course endpoint. Returns the assistant text."""
     body = {"model": model, "messages": messages,
             "max_tokens": max_tokens, "temperature": temperature}
+    if PROVIDER == "OpenRouter":
+        # Reasoning is mandatory on the gemini-*-flash endpoints and its tokens
+        # are charged as completion tokens, spent before any visible content.
+        # Without this cap a max_tokens of 120 returns empty output. Verified
+        # 2026-09-02; see docs/followups/2026-09-02-llm-py-reasoning-cap.md.
+        body["reasoning"] = {"effort": "low"}
     raw = json.dumps(body, sort_keys=True).encode()
 
     if cache:
