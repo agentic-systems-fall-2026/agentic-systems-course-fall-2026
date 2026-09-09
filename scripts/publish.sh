@@ -131,7 +131,19 @@ else
   git commit -q -m "Publish ${TARGET} to GitHub Pages"
   echo "Committed ${TARGET}/"
 fi
-git push -q origin HEAD
+# Bring in anything pushed to the repository since this clone last pulled
+# (course fixes land this way), then push. One retry, then a plain message.
+if ! git pull -q --rebase origin main 2>/dev/null; then
+  git rebase --abort 2>/dev/null || true
+  git pull -q --no-rebase origin main 2>/dev/null || true
+fi
+if ! git push -q origin HEAD 2>/dev/null; then
+  git pull -q --rebase origin main 2>/dev/null || true
+  if ! git push -q origin HEAD; then
+    echo "publish.sh: the push was rejected. Run  git pull  in the repository, resolve anything it reports, then run this again." >&2
+    exit 7
+  fi
+fi
 echo "Pushed to GitHub."
 
 origin="$(git remote get-url origin)"
