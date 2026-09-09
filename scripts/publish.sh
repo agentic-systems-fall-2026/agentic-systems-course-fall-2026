@@ -118,7 +118,9 @@ if [[ -n "${staged_elsewhere}" ]]; then
   exit 6
 fi
 
-# ---- Find the build in the agent workspace if nothing was given -------------
+# ---- Find the build if nothing was given ------------------------------------
+# Look in the agent workspace and in the repository itself: a build made before
+# this script existed often sits in a folder of the student's own naming.
 if [[ -z "${SRC}" && ! -f "${ROOT}/${TARGET}/index.html" ]]; then
   ws="${OPENCLAW_WORKSPACE:-${HOME}/.openclaw/workspace}"
   cands=()
@@ -126,17 +128,23 @@ if [[ -z "${SRC}" && ! -f "${ROOT}/${TARGET}/index.html" ]]; then
     while IFS= read -r f; do cands+=("${f%/index.html}"); done \
       < <(find "${ws}" -maxdepth 4 -name index.html -not -path '*/node_modules/*' -not -path '*/.git/*' -not -path '*/skills/*' 2>/dev/null | sort -u)
   fi
+  while IFS= read -r f; do cands+=("${f%/index.html}"); done \
+    < <(find "${ROOT}" -maxdepth 3 -name index.html \
+          -not -path '*/node_modules/*' -not -path '*/.git/*' -not -path '*/_site/*' \
+          -not -path "${ROOT}/.*" -not -path "${ROOT}/scripts/*" -not -path "${ROOT}/common/*" \
+          -not -path "${ROOT}/config/*" -not -path "${ROOT}/openclaw/*" -not -path "${ROOT}/prompts/*" \
+          2>/dev/null | sort -u)
   hint=""
   case "${TARGET}" in
     bc0-space-invaders) hint='invader|space|bc0-space' ;;
-    bc0b-app) hint='bc0b|app' ;;
+    bc0b-app) hint='bc0b|[^a-z]0b|^0b|app' ;;
     shipday) hint='ship' ;;
     capstone) hint='capstone' ;;
   esac
   picked=()
   for c in "${cands[@]:-}"; do
     [[ -n "${c}" ]] || continue
-    rel="${c#"${ws}"/}"          # match the project name, never the workspace path
+    rel="${c#"${ws}"/}"; rel="${rel#"${ROOT}"/}"   # match the project name, never the path above it
     echo "${rel}" | grep -qiE "${hint}" && picked+=("${c}")
   done
   if [[ ${#picked[@]} -eq 0 && ${#cands[@]} -eq 1 && -n "${cands[0]}" ]]; then picked=("${cands[0]}"); fi

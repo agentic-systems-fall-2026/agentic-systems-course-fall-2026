@@ -62,7 +62,10 @@ file is not enough.
 ## If something goes wrong
 
 - The agent cannot find the game: tell it the folder name, or run the
-  manual command with the folder as the second argument.
+  manual command with the folder as the second argument. If you built in a
+  folder of your own naming, that is fine; publishing looks through your
+  repository as well as the agent workspace, and copies what it finds into
+  the folder the assignment expects.
 - `PENDING:` instead of `PUBLISHED:`: the publish has not finished, so do
   not submit yet. Run `gh run list --workflow pages.yml` to see whether the
   run failed, then run the publish again. If it is the very first publish

@@ -27,8 +27,11 @@ made in this workspace usually live under `~/.openclaw/workspace/`.
 
 1. Find the folder that contains the build's `index.html`. If you built it
    in this session you already know it. Otherwise look under
-   `~/.openclaw/workspace/` and the repository folder itself. Ask the user
-   only if two candidates look equally likely.
+   `~/.openclaw/workspace/` and in the repository itself, where an earlier
+   build often sits in a folder of the user's own naming (`bc0-invaders`,
+   `projects/space-invaders`, and so on). The script searches both places
+   too, so running it without a source is a reasonable first attempt. Ask
+   the user only if two candidates look equally likely.
 2. Run the script with the target and that folder, for example:
 
        bash /workspaces/my-course-repo/scripts/publish.sh bc0-space-invaders ~/.openclaw/workspace/space-invaders
