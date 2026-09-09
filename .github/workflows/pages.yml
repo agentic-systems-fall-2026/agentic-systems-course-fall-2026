@@ -49,10 +49,12 @@ jobs:
               echo "skipping $d (no index.html)"
             fi
           done
+          shopt -s nullglob
           {
             printf '<!doctype html><meta charset="utf-8"><title>Build challenge sites</title>'
             printf '<h1>Build challenge sites</h1><ul>'
             for d in _site/*/; do
+              [ -d "$d" ] || continue
               n=$(basename "$d")
               printf '<li><a href="%s/">%s</a></li>' "$n" "$n"
             done
