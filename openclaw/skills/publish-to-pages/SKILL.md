@@ -46,7 +46,9 @@ made in this workspace usually live under `~/.openclaw/workspace/`.
      finished, show the script's explanation, and suggest
      `gh run list --workflow pages.yml`. Do not call it ready to submit.
    - any other non-zero exit: show the user the script's message. It says
-     what to fix (a key in a file, a branch, a git conflict).
+     what to fix (a key in a file, a branch, a git conflict, other files
+     staged for commit). The script changes nothing when it refuses, so it is
+     safe to fix the cause and run it again.
 
 ## Rules
 

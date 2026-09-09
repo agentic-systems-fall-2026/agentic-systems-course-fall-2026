@@ -34,6 +34,26 @@ usage() {
 
 fail() { echo "publish.sh: $1" >&2; exit "${2:-1}"; }
 
+# Look for anything shaped like an API key. Binary-looking files are scanned as
+# text (-a), because a stray NUL byte must not turn a key into "no matches".
+# Prints matching paths on stdout. Exit 0 = found, 1 = clean, 2 = scan failed.
+scan_for_keys() {
+  local out rc
+  set +e
+  out="$(grep -ralE \
+      -e 'sk-or-v1-[A-Za-z0-9]{8,}' \
+      -e 'sk-ant-[A-Za-z0-9_-]{8,}' \
+      -e 'sk-proj-[A-Za-z0-9_-]{8,}' \
+      -e 'AKIA[0-9A-Z]{16}' \
+      -e 'gh[pousr]_[A-Za-z0-9]{20,}' \
+      -e '^[[:space:]]*(export[[:space:]]+)?(OPENROUTER_API_KEY|LITELLM_API_KEY|ANTHROPIC_API_KEY|OPENAI_API_KEY|GITHUB_TOKEN)[[:space:]]*=[[:space:]]*["'"'"']?[A-Za-z0-9_-]{12,}' \
+      "$1" 2>&1)"
+  rc=$?
+  set -e
+  printf '%s' "${out}"
+  return ${rc}
+}
+
 # Make the OpenClaw agent aware of this script (idempotent, best effort).
 install_skill() {
   local ws="${OPENCLAW_WORKSPACE:-${HOME}/.openclaw/workspace}"
@@ -91,8 +111,11 @@ for op in rebase-merge rebase-apply MERGE_HEAD CHERRY_PICK_HEAD; do
 done
 staged_elsewhere="$(git diff --cached --name-only | grep -v "^${TARGET}/" | grep -v "^\.publish/" || true)"
 if [[ -n "${staged_elsewhere}" ]]; then
-  echo "publish.sh: these files are staged but are not part of ${TARGET}/, so they are left out of the publish commit:" >&2
+  echo "publish.sh: these files are staged for commit but are not part of ${TARGET}/:" >&2
   echo "${staged_elsewhere}" | sed 's/^/   /' >&2
+  echo "Publishing would leave them out of the commit and cannot promise to keep them staged." >&2
+  echo "Commit them (git commit) or unstage them (git restore --staged <file>), then run this again." >&2
+  exit 6
 fi
 
 # ---- Find the build in the agent workspace if nothing was given -------------
@@ -149,6 +172,18 @@ if [[ -n "${SRC}" ]]; then
     stage="$(mktemp -d)"
     trap 'rm -rf "${stage}"' EXIT
     (cd "${SRC}" && tar --exclude=node_modules --exclude=.git -cf - .) | (cd "${stage}" && tar -xf -)
+    # Check the incoming build before anything in the repository is touched, so
+    # a refused publish leaves the previous version exactly as it was.
+    set +e; stage_hits="$(scan_for_keys "${stage}")"; stage_rc=$?; set -e
+    if [[ ${stage_rc} -eq 0 ]]; then
+      echo "publish.sh: refusing to publish. These files in ${SRC} look like they contain an API key:" >&2
+      echo "${stage_hits}" | sed "s|^${stage}|   ${SRC}|" >&2
+      echo "Remove the key from the file, then run this again. Nothing in the repository was changed." >&2
+      rm -rf "${stage}"; exit 5
+    elif [[ ${stage_rc} -ne 1 ]]; then
+      rm -rf "${stage}"
+      fail "the key scan failed (grep exit ${stage_rc}): ${stage_hits}. Nothing in the repository was changed." 5
+    fi
     mkdir -p "${dest}"
     # Remove only what the last publish put here and this one does not, so a file
     # you deleted while building leaves the site, while your source tree, your
@@ -163,6 +198,11 @@ if [[ -n "${SRC}" ]]; then
         old_path="${dest}/${rel}"
         [[ -e "${old_path}" ]] || continue
         [[ "${old_path}" == "${SRC}/"* ]] && continue   # never touch the source
+        # Only remove a file git can give back: tracked, and saved as committed.
+        if [[ -n "$(git status --porcelain --untracked-files=all -- "${TARGET}/${rel}" 2>/dev/null)" ]]; then
+          echo "Keeping ${TARGET}/${rel}: it has changes that are not committed, so it is not mine to delete." >&2
+          continue
+        fi
         rm -f "${old_path}" && removed=$((removed+1))
       done < "${manifest}"
     fi
@@ -189,21 +229,11 @@ fi
 
 # ---- Refuse anything that looks like a key ------------------------------------
 # Keys live in Codespaces secrets, never in files. A scanner error is a stop, not a pass.
-set +e
-hits="$(grep -rIlE \
-      -e 'sk-or-v1-[A-Za-z0-9]{8,}' \
-      -e 'sk-ant-[A-Za-z0-9_-]{8,}' \
-      -e 'sk-proj-[A-Za-z0-9_-]{8,}' \
-      -e 'AKIA[0-9A-Z]{16}' \
-      -e 'gh[pousr]_[A-Za-z0-9]{20,}' \
-      -e '^[[:space:]]*(export[[:space:]]+)?(OPENROUTER_API_KEY|LITELLM_API_KEY|ANTHROPIC_API_KEY|OPENAI_API_KEY|GITHUB_TOKEN)[[:space:]]*=[[:space:]]*["'"'"']?[A-Za-z0-9_-]{12,}' \
-      "${ROOT}/${TARGET}" 2>&1)"
-rc=$?
-set -e
+set +e; hits="$(scan_for_keys "${ROOT}/${TARGET}")"; rc=$?; set -e
 if [[ ${rc} -eq 0 ]]; then
   echo "publish.sh: refusing to publish. These files look like they contain an API key:" >&2
-  echo "${hits}" | sed 's/^/   /' >&2
-  echo "Remove the key from the file, then run this again. The copy in ${TARGET}/ has not been committed." >&2
+  echo "${hits}" | sed "s|^${ROOT}/|   |" >&2
+  echo "Remove the key from the file, then run this again. Nothing was committed." >&2
   exit 5
 elif [[ ${rc} -ne 1 ]]; then
   fail "the key scan failed (grep exit ${rc}): ${hits}. Nothing was committed." 5
@@ -244,28 +274,53 @@ echo "Pushed ${sha:0:8} to GitHub."
 BASE="https://${ORG}.github.io/${repo}"
 URL="${BASE}/${TARGET}/"
 echo "Waiting for GitHub Pages to publish commit ${sha:0:8} (the first time takes a minute or two) ..."
+
+# The site is current when it serves this commit, or when it serves an earlier
+# commit whose published folders are identical to this one's: the workflow only
+# runs for commits that touch those folders, so an unrelated commit in between
+# never gets its own deployment and must not be waited for.
+site_is_current() {
+  local served="$1"
+  [[ "${served}" == "${sha}" ]] && return 0
+  [[ ${#served} -eq 40 ]] || return 1
+  git cat-file -e "${served}^{commit}" 2>/dev/null || return 1
+  git diff --quiet "${served}" "${sha}" -- bc0-space-invaders bc0b-app shipday capstone .publish 2>/dev/null
+}
+
+dispatched=0
 served=""
-for _ in $(seq 1 30); do
+for attempt in $(seq 1 30); do
   served="$(curl -s -m 15 "${BASE}/version.txt?${sha:0:8}" 2>/dev/null | tr -d '[:space:]' || true)"
-  if [[ "${served}" == "${sha}" ]]; then
+  if site_is_current "${served}"; then
     code="$(curl -s -o /dev/null -m 15 -w '%{http_code}' "${URL}?${sha:0:8}" || true)"
     if [[ "${code}" == "200" ]]; then
       echo
+      [[ "${served}" == "${sha}" ]] || echo "The site already has exactly these files (published as ${served:0:8})."
       echo "PUBLISHED: ${URL}"
       exit 0
     fi
     echo
-    fail "the site is live for commit ${sha:0:8} but ${URL} returned ${code}. The folder was not published; check that ${TARGET}/index.html is committed." 8
+    fail "the site is live but ${URL} returned ${code}. The folder was not published; check that ${TARGET}/index.html is committed." 8
+  fi
+  # No deployment is coming for this commit if the push carried nothing the
+  # workflow watches. Ask for one, once, rather than waiting out the clock.
+  if [[ ${attempt} -eq 4 && ${dispatched} -eq 0 ]] && command -v gh >/dev/null 2>&1; then
+    if gh workflow run pages.yml --ref main >/dev/null 2>&1; then
+      dispatched=1
+      echo
+      echo "No publish run had started, so I asked GitHub to start one."
+    fi
   fi
   printf '.'
   sleep 10
 done
 echo
-if [[ -n "${served}" && ${#served} -eq 40 ]]; then
-  echo "The site is still serving an older commit (${served:0:8}). The publish run for ${sha:0:8} has not finished or has failed."
+if [[ ${#served} -eq 40 ]]; then
+  echo "The site is still serving ${served:0:8}, and the run for ${sha:0:8} has not finished or has failed."
 else
   echo "The site is not answering yet. If this is the first publish for this repository, GitHub Pages may not be enabled: ask the instructor."
 fi
-echo "Check the run with:  gh run list --workflow pages.yml"
+echo "See what happened:   gh run list --workflow pages.yml"
+echo "Start a run by hand: gh workflow run pages.yml --ref main"
 echo "PENDING: ${URL}   (not finished; do not submit this yet)"
 exit 8

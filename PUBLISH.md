@@ -70,6 +70,9 @@ file is not enough.
   tell the instructor.
 - The script says there is a git conflict: run `git status`, fix the files
   it lists, then run the publish again. Your build is already committed.
+- The script stops because you have other files staged: commit them
+  (`git commit`) or unstage them (`git restore --staged <file>`), then run the
+  publish again. It refuses rather than risk losing what you had staged.
 - You need to take a site down: delete the folder's `index.html`, commit,
   and push; the next run removes it from the site.
 - The script refuses because of a key: remove the key from the file it

@@ -54,7 +54,7 @@ jobs:
               mkdir -p "$SITE/$d"
               # regular files only: no symlinks (the upload step would dereference them), no specials
               (cd "$d" && find . -type f \
-                  -not -name '*.md' -not -name '*.MD' -not -name '.env*' \
+                  -not -iname '*.md' -not -iname '.env*' \
                   -not -path '*/node_modules/*' -not -path '*/.git/*' -print0) \
                 | (cd "$d" && xargs -0 -I{} cp --parents --no-dereference -- {} "$SITE/$d/")
             else
@@ -81,7 +81,7 @@ jobs:
       - name: Refuse to publish anything that looks like a key
         run: |
           set +e
-          hits=$(grep -rIlE \
+          hits=$(grep -ralE \
             -e 'sk-or-v1-[A-Za-z0-9]{8,}' \
             -e 'sk-ant-[A-Za-z0-9_-]{8,}' \
             -e 'sk-proj-[A-Za-z0-9_-]{8,}' \
