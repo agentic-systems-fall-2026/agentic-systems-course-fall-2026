@@ -89,7 +89,7 @@ branch="$(git rev-parse --abbrev-ref HEAD)"
 for op in rebase-merge rebase-apply MERGE_HEAD CHERRY_PICK_HEAD; do
   [[ -e "$(git rev-parse --git-path "${op}")" ]] && fail "a git ${op%%-*} is in progress. Finish or abort it, then run this again." 6
 done
-staged_elsewhere="$(git diff --cached --name-only | grep -v "^${TARGET}/" || true)"
+staged_elsewhere="$(git diff --cached --name-only | grep -v "^${TARGET}/" | grep -v "^\.publish/" || true)"
 if [[ -n "${staged_elsewhere}" ]]; then
   echo "publish.sh: these files are staged but are not part of ${TARGET}/, so they are left out of the publish commit:" >&2
   echo "${staged_elsewhere}" | sed 's/^/   /' >&2
@@ -136,25 +136,55 @@ if [[ -n "${SRC}" ]]; then
   SRC="$(cd "${SRC}" && pwd -P)"
   [[ -f "${SRC}/index.html" ]] || fail "${SRC} has no index.html, so it is not a web page yet." 4
   dest="${ROOT}/${TARGET}"
+  [[ ! -L "${dest}" ]] || fail "${TARGET} is a symbolic link. Publishing needs a real folder; remove the link and put the build in ${TARGET}/." 4
   if [[ "${SRC}" == "${dest}" ]]; then
     echo "Source and ${TARGET}/ are the same folder; nothing to copy."
   else
-    [[ "${dest}/" != "${SRC}/"* ]] || fail "${SRC} contains the repository folder; choose the folder that holds only the build." 4
+    [[ "${dest}/" != "${SRC}/"* ]] || fail "${SRC} contains ${TARGET}/. Pass the folder that holds only the build (for example its dist/ or build/ folder)." 4
     if find "${SRC}" -type l -not -path '*/node_modules/*' -not -path '*/.git/*' | grep -q .; then
       fail "${SRC} contains symbolic links, which cannot be published. Replace them with ordinary files." 4
     fi
+    # Stage first: the source may live inside the target (a dist/ folder, say),
+    # so nothing in the target may be removed until the copy is safely elsewhere.
+    stage="$(mktemp -d)"
+    trap 'rm -rf "${stage}"' EXIT
+    (cd "${SRC}" && tar --exclude=node_modules --exclude=.git -cf - .) | (cd "${stage}" && tar -xf -)
     mkdir -p "${dest}"
-    # Keep the private course notes in the destination; replace everything else.
-    keep=$(mktemp -d)
-    for n in person.md agent-notes.md; do [[ -f "${dest}/${n}" ]] && cp "${dest}/${n}" "${keep}/${n}"; done
-    find "${dest}" -mindepth 1 -not -name 'person.md' -not -name 'agent-notes.md' -delete 2>/dev/null || true
-    (cd "${SRC}" && tar --exclude=node_modules --exclude=.git -cf - .) | (cd "${dest}" && tar -xf -)
-    for n in person.md agent-notes.md; do [[ -f "${keep}/${n}" ]] && cp "${keep}/${n}" "${dest}/${n}"; done
-    rm -rf "${keep}"
-    echo "Copied ${SRC} into ${TARGET}/ (files no longer in the build were removed; person.md and agent-notes.md kept)"
+    # Remove only what the last publish put here and this one does not, so a file
+    # you deleted while building leaves the site, while your source tree, your
+    # notes, and anything you put in this folder by hand are left alone.
+    manifest="${ROOT}/.publish/${TARGET}.files"
+    removed=0
+    if [[ -f "${manifest}" ]]; then
+      while IFS= read -r rel; do
+        [[ -n "${rel}" ]] || continue
+        case "${rel}" in person.md|agent-notes.md|*/..*|/*) continue ;; esac
+        [[ -e "${stage}/${rel}" ]] && continue
+        old_path="${dest}/${rel}"
+        [[ -e "${old_path}" ]] || continue
+        [[ "${old_path}" == "${SRC}/"* ]] && continue   # never touch the source
+        rm -f "${old_path}" && removed=$((removed+1))
+      done < "${manifest}"
+    fi
+    (cd "${stage}" && tar -cf - .) | (cd "${dest}" && tar -xf -)
+    mkdir -p "${ROOT}/.publish"
+    (cd "${stage}" && find . -type f | sed 's|^\./||' | sort) > "${manifest}"
+    rm -rf "${stage}"; trap - EXIT
+    if [[ ${removed} -gt 0 ]]; then
+      echo "Copied ${SRC} into ${TARGET}/ (${removed} file(s) from the previous publish removed)"
+    else
+      echo "Copied ${SRC} into ${TARGET}/"
+    fi
   fi
 fi
 
+[[ ! -L "${ROOT}/${TARGET}" ]] || fail "${TARGET} is a symbolic link. Publishing needs a real folder." 4
+if find "${ROOT}/${TARGET}" -type l -not -path '*/node_modules/*' 2>/dev/null | grep -q .; then
+  echo "publish.sh: refusing to publish. ${TARGET}/ contains symbolic links, which can expose files from outside the folder:" >&2
+  find "${ROOT}/${TARGET}" -type l -not -path '*/node_modules/*' | sed "s|^${ROOT}/|   |" >&2
+  echo "Replace them with ordinary files, then run this again." >&2
+  exit 4
+fi
 [[ -f "${ROOT}/${TARGET}/index.html" ]] || fail "${TARGET}/index.html does not exist. Put the build's index.html (and its files) in ${TARGET}/, or pass the folder it lives in as the second argument." 4
 
 # ---- Refuse anything that looks like a key ------------------------------------
@@ -180,11 +210,11 @@ elif [[ ${rc} -ne 1 ]]; then
 fi
 
 # ---- Commit only the target folder ------------------------------------------------
-git add -A -- "${TARGET}"
-if git diff --cached --quiet -- "${TARGET}"; then
+git add -A -- "${TARGET}" ".publish/${TARGET}.files" 2>/dev/null || git add -A -- "${TARGET}"
+if git diff --cached --quiet -- "${TARGET}" ".publish/${TARGET}.files"; then
   echo "Nothing new to commit in ${TARGET}/; publishing the version already in the repository."
 else
-  git commit -q -m "Publish ${TARGET} to GitHub Pages" -- "${TARGET}"
+  git commit -q -m "Publish ${TARGET} to GitHub Pages" -- "${TARGET}" ".publish/${TARGET}.files"
   echo "Committed ${TARGET}/"
 fi
 

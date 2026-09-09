@@ -17,6 +17,7 @@ on:
       - 'bc0b-app/**'
       - 'shipday/**'
       - 'capstone/**'
+      - '.publish/**'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 
@@ -39,6 +40,15 @@ jobs:
           SITE="${RUNNER_TEMP}/site"          # fresh directory outside the checkout
           rm -rf "$SITE"; mkdir -p "$SITE"
           for d in bc0-space-invaders bc0b-app shipday capstone; do
+            if [ -L "$d" ]; then
+              echo "::error::$d is a symbolic link; a link can point outside the folder, so nothing is published"; exit 1
+            fi
+            [ -d "$d" ] || { echo "skipping $d (no such folder)"; continue; }
+            if find "$d" -type l -not -path '*/node_modules/*' | grep -q .; then
+              echo "::error::$d contains symbolic links, which can expose files from outside the folder:"
+              find "$d" -type l -not -path '*/node_modules/*'
+              exit 1
+            fi
             if [ -f "$d/index.html" ]; then
               echo "publishing $d"
               mkdir -p "$SITE/$d"
