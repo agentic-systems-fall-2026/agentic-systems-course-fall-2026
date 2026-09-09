@@ -151,8 +151,12 @@ justify, never just raise the threshold.
 
 ## Toolbelt (pre-installed)
 
-Beyond Python/Node/git, setup installs: `cloudflared` (share a running demo:
-`cloudflared tunnel --url http://localhost:5000`), `jq` (JSON wrangling),
+To put a build on the web with a permanent link, see `PUBLISH.md`: your
+agent runs `scripts/publish.sh` and the repository publishes to GitHub Pages.
+
+Beyond Python/Node/git, setup installs: `cloudflared` (share a RUNNING demo live
+in class: `cloudflared tunnel --url http://localhost:5000`; the link dies when the
+Codespace sleeps, so it is never a submission link), `jq` (JSON wrangling),
 `gh` (check your CI eval runs: `gh run list`), `sqlite3` (retrieval/memory
 labs, agent state), `tmux` (keep long-running agents alive — BC3),
 `asciinema` (terminal recordings — an official demo-evidence format:

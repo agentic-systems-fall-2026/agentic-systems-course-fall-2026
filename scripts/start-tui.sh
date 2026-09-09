@@ -65,6 +65,7 @@ while :; do
      || timeout 1 bash -c ':</dev/tcp/127.0.0.1/18789' 2>/dev/null; then
     show_gateway_progress
     echo "✅  Gateway is up (after ~${SECONDS}s) — launching the TUI ..."
+    bash "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/publish.sh" --install-skill >/dev/null 2>&1 || true
     sleep 1
     # Re-read the token now — the gateway may have just generated/persisted it.
     TUI_TOKEN="${OPENCLAW_GATEWAY_TOKEN:-}"

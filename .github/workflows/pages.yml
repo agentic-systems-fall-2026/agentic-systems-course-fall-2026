@@ -1,0 +1,75 @@
+name: Publish build challenge sites
+
+# Publishes ONLY the build folders that contain an index.html to GitHub Pages.
+# Everything else in the repository (PROMPTS.md, JOURNAL.md, agent-notes.md,
+# bc0b-app/person.md, scripts, config) is never published, and the repository
+# itself stays private. See PUBLISH.md.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'bc0-space-invaders/**'
+      - 'bc0b-app/**'
+      - 'shipday/**'
+      - 'capstone/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    # The course template itself never publishes.
+    if: github.repository != 'agentic-systems-fall-2026/agentic-systems-course-fall-2026'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - name: Collect only the folders that are meant to be public
+        run: |
+          mkdir -p _site
+          for d in bc0-space-invaders bc0b-app shipday capstone; do
+            if [ -f "$d/index.html" ]; then
+              echo "publishing $d"
+              mkdir -p "_site/$d"
+              cp -r "$d"/. "_site/$d"/
+              find "_site/$d" -type f \( -name '*.md' -o -name '.env*' \) -delete
+              find "_site/$d" -type d -name node_modules -prune -exec rm -rf {} + 2>/dev/null || true
+            else
+              echo "skipping $d (no index.html)"
+            fi
+          done
+          {
+            printf '<!doctype html><meta charset="utf-8"><title>Build challenge sites</title>'
+            printf '<h1>Build challenge sites</h1><ul>'
+            for d in _site/*/; do
+              n=$(basename "$d")
+              printf '<li><a href="%s/">%s</a></li>' "$n" "$n"
+            done
+            printf '</ul>'
+          } > _site/index.html
+          touch _site/.nojekyll
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    if: github.repository != 'agentic-systems-fall-2026/agentic-systems-course-fall-2026'
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

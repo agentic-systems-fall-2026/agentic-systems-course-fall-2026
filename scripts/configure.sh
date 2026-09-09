@@ -195,3 +195,9 @@ if command -v openclaw >/dev/null 2>&1; then
     && echo "Config validated OK." \
     || echo "(Heads up: 'openclaw config validate' reported issues — run 'openclaw doctor' to inspect.)"
 fi
+
+# Make the OpenClaw agent aware of scripts/publish.sh (see PUBLISH.md) by
+# installing the publish-to-pages skill into the agent workspace. Best effort:
+# the workspace may not exist yet on a brand-new Codespace, in which case the
+# first publish (or the TUI launcher) installs it.
+bash "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/publish.sh" --install-skill 2>/dev/null || true
