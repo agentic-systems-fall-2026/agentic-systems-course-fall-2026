@@ -132,13 +132,16 @@ else
   echo "Committed ${TARGET}/"
 fi
 # Bring in anything pushed to the repository since this clone last pulled
-# (course fixes land this way), then push. One retry, then a plain message.
-if ! git pull -q --rebase origin main 2>/dev/null; then
+# (course fixes land this way), then push. Local edits are stashed around the
+# pull (--autostash) so an untidy working tree does not block publishing.
+pull_latest() {
+  git pull -q --rebase --autostash origin main 2>/dev/null && return 0
   git rebase --abort 2>/dev/null || true
-  git pull -q --no-rebase origin main 2>/dev/null || true
-fi
+  git pull -q --no-rebase --autostash origin main 2>/dev/null
+}
+pull_latest || true
 if ! git push -q origin HEAD 2>/dev/null; then
-  git pull -q --rebase origin main 2>/dev/null || true
+  pull_latest || true
   if ! git push -q origin HEAD; then
     echo "publish.sh: the push was rejected. Run  git pull  in the repository, resolve anything it reports, then run this again." >&2
     exit 7
