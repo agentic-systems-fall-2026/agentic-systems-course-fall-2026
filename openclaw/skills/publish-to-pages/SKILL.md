@@ -1,17 +1,19 @@
 ---
 name: publish-to-pages
-description: Publish a build challenge folder to GitHub Pages so it has a permanent public URL. Use when the user asks to publish, deploy, put online, share a link, or get a URL for a game or web app they built in this course.
+description: Publish a build challenge folder to GitHub Pages so it has a stable public URL. Use when the user asks to publish, deploy, put online, share a link, or get a URL for a game or web app they built in this course.
 ---
 
 # Publish a build to GitHub Pages
 
 The course repository publishes its build folders to GitHub Pages. The
-address is permanent, needs no extra account, and does not die when the
+address is stable, needs no extra account, and does not die when the
 Codespace sleeps. The script that does the work lives in the repository:
 
-    bash /workspaces/<repo>/scripts/publish.sh <target> <source-dir>
+    bash <repo>/scripts/publish.sh <target> <source-dir>
 
-`<repo>` is the course repository under /workspaces (there is normally one).
+`<repo>` is the course repository, normally the single folder under
+/workspaces. Resolve it first (for example `ls -d /workspaces/*/scripts/publish.sh`)
+and use that one path; do not pass a glob to the command.
 `<target>` is the repository folder the build belongs in:
 
 - `bc0-space-invaders` for the Space Invaders build (Build Challenge 0)
@@ -29,13 +31,22 @@ made in this workspace usually live under `~/.openclaw/workspace/`.
    only if two candidates look equally likely.
 2. Run the script with the target and that folder, for example:
 
-       bash /workspaces/*/scripts/publish.sh bc0-space-invaders ~/.openclaw/workspace/space-invaders
+       bash /workspaces/my-course-repo/scripts/publish.sh bc0-space-invaders ~/.openclaw/workspace/space-invaders
 
-3. Wait for it to finish. It copies the build into the repository folder,
-   commits, pushes, and polls the site. It prints a final line that starts
-   with `PUBLISHED:` (or `PENDING:` if the site is still building).
-4. Report that line to the user verbatim, and tell them to paste the URL
-   into the Canvas assignment together with the repository link.
+   Always pass the source folder explicitly and tell the user which folder
+   you are publishing. Files no longer in that folder are removed from the
+   repository copy; `person.md` and `agent-notes.md` in the target are kept.
+3. Wait for it to finish (up to five minutes). It copies the build into the
+   repository folder, commits only that folder, pulls, pushes, and waits
+   until the site serves that exact commit. It ends with one of:
+   - `PUBLISHED: <url>` (exit 0): done. Report the line verbatim and tell
+     the user to paste the URL into the Canvas assignment with the
+     repository link.
+   - `PENDING: <url>` (exit 8): NOT done. Tell the user the publish has not
+     finished, show the script's explanation, and suggest
+     `gh run list --workflow pages.yml`. Do not call it ready to submit.
+   - any other non-zero exit: show the user the script's message. It says
+     what to fix (a key in a file, a branch, a git conflict).
 
 ## Rules
 
@@ -47,7 +58,11 @@ made in this workspace usually live under `~/.openclaw/workspace/`.
   refuses because a file looks like it holds a key, show the user the
   script's message, help them remove the key from that file, and only then
   run it again.
-- If the script says the folder has no `index.html`, the build is not a web
-  page yet; tell the user which folder you looked in and ask where the
-  page is.
+- If the script says the folder has no `index.html`, either the build is
+  not a web page yet, or it is a framework project whose output has not
+  been built. Tell the user which folder you looked in; if it has a
+  `package.json` with a build script, run the build and publish its output
+  folder (`dist/` or `build/`) instead.
+- Pages serves static files only. An app that needs a server or an API key
+  at runtime will not work there; say so rather than publishing it.
 - Do not edit `scripts/publish.sh`.

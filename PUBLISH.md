@@ -1,8 +1,8 @@
 # Publish a build to the web
 
 Your course repository publishes its build folders to GitHub Pages. The
-address is permanent, it needs no extra account or key, and it does not stop
-working when your Codespace sleeps. Deploying is one command, and your agent
+address stays the same for the whole course, it needs no extra account or
+key, and it does not stop working when your Codespace sleeps. Deploying is one command, and your agent
 can run it for you.
 
 ## Tell your agent
@@ -18,7 +18,9 @@ any fresh Codespace, this is enough:
     Publish bc0-space-invaders.
 
 The agent runs `scripts/publish.sh`, which copies your build into the
-repository folder, commits, pushes, waits for the site, and prints one line:
+repository folder (replacing the old copy, but keeping `person.md` and
+`agent-notes.md`), commits only that folder, pulls, pushes, waits until the
+site serves that exact commit, and prints one line:
 
     PUBLISHED: https://agentic-systems-fall-2026.github.io/<your-repo-name>/bc0-space-invaders/
 
@@ -29,9 +31,16 @@ link. Open it on your phone or another laptop first to confirm it works.
 
     bash scripts/publish.sh bc0-space-invaders ~/.openclaw/workspace/<folder-with-index.html>
 
-Leave off the second argument if the files are already in the repository
-folder, or if you want the script to look for the build in the agent
-workspace on its own. Use `bc0b-app` for Build Challenge 0b.
+Leave off the second argument only if the files are already in the
+repository folder; then that copy is what gets published, even if you have a
+newer one in the agent workspace. Use `bc0b-app` for Build Challenge 0b.
+
+Pages serves static files only (HTML, CSS, JavaScript, images). Anything that
+needs a server or an API key at runtime will not run there. Personal data
+you put in a JSON or JavaScript file inside the folder is public; only
+Markdown files are stripped. All course sites share one browser origin, so
+data an app stores in the browser is visible to the other course sites too;
+use made-up data for anything sensitive.
 
 ## What gets published, and what does not
 
@@ -45,15 +54,24 @@ scripts, config, and anything else in the repository. The repository itself
 stays private; only the published pages are public.
 
 Before it commits, the script scans the folder for anything that looks like
-an API key and refuses if it finds one. Keys belong in Codespaces secrets,
-never in a file.
+an API key and refuses if it finds one; the publish run on GitHub scans the
+whole site again before it goes live. Keys belong in Codespaces secrets,
+never in a file. If a key ever does get published, revoke it; deleting the
+file is not enough.
 
 ## If something goes wrong
 
 - The agent cannot find the game: tell it the folder name, or run the
   manual command with the folder as the second argument.
-- `PENDING:` instead of `PUBLISHED:`: the first publish can take a couple of
-  minutes. Wait, then open the address; or run `gh run list` to watch it.
+- `PENDING:` instead of `PUBLISHED:`: the publish has not finished, so do
+  not submit yet. Run `gh run list --workflow pages.yml` to see whether the
+  run failed, then run the publish again. If it is the very first publish
+  for your repository and nothing appears, Pages may not be enabled yet;
+  tell the instructor.
+- The script says there is a git conflict: run `git status`, fix the files
+  it lists, then run the publish again. Your build is already committed.
+- You need to take a site down: delete the folder's `index.html`, commit,
+  and push; the next run removes it from the site.
 - The script refuses because of a key: remove the key from the file it
   names, then run it again.
 - You are on a branch other than `main`: run `git checkout main` first.

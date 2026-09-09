@@ -4,6 +4,10 @@ name: Publish build challenge sites
 # Everything else in the repository (PROMPTS.md, JOURNAL.md, agent-notes.md,
 # bc0b-app/person.md, scripts, config) is never published, and the repository
 # itself stays private. See PUBLISH.md.
+#
+# Pages must already be enabled for the repository (build type "workflow").
+# The workflow token cannot enable it; the instructor runs
+# docs/deploy/enable-pages.sh once per repository.
 
 on:
   push:
@@ -16,35 +20,33 @@ on:
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build:
     # The course template itself never publishes.
     if: github.repository != 'agentic-systems-fall-2026/agentic-systems-course-fall-2026'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/configure-pages@v5
-        with:
-          enablement: true
       - name: Collect only the folders that are meant to be public
         run: |
-          mkdir -p _site
+          set -euo pipefail
+          SITE="${RUNNER_TEMP}/site"          # fresh directory outside the checkout
+          rm -rf "$SITE"; mkdir -p "$SITE"
           for d in bc0-space-invaders bc0b-app shipday capstone; do
             if [ -f "$d/index.html" ]; then
               echo "publishing $d"
-              mkdir -p "_site/$d"
-              cp -r "$d"/. "_site/$d"/
-              find "_site/$d" -type f \( -name '*.md' -o -name '.env*' \) -delete
-              find "_site/$d" -type d -name node_modules -prune -exec rm -rf {} + 2>/dev/null || true
+              mkdir -p "$SITE/$d"
+              # regular files only: no symlinks (the upload step would dereference them), no specials
+              (cd "$d" && find . -type f \
+                  -not -name '*.md' -not -name '*.MD' -not -name '.env*' \
+                  -not -path '*/node_modules/*' -not -path '*/.git/*' -print0) \
+                | (cd "$d" && xargs -0 -I{} cp --parents --no-dereference -- {} "$SITE/$d/")
             else
               echo "skipping $d (no index.html)"
             fi
@@ -53,21 +55,43 @@ jobs:
           {
             printf '<!doctype html><meta charset="utf-8"><title>Build challenge sites</title>'
             printf '<h1>Build challenge sites</h1><ul>'
-            for d in _site/*/; do
+            for d in "$SITE"/*/; do
               [ -d "$d" ] || continue
               n=$(basename "$d")
               printf '<li><a href="%s/">%s</a></li>' "$n" "$n"
             done
             printf '</ul>'
-          } > _site/index.html
-          touch _site/.nojekyll
+          } > "$SITE/index.html"
+          printf '%s\n' "$GITHUB_SHA" > "$SITE/version.txt"
+          touch "$SITE/.nojekyll"
+          if find "$SITE" -not -type f -not -type d | grep -q .; then
+            echo "::error::non-regular files in the site tree"; find "$SITE" -not -type f -not -type d; exit 1
+          fi
+          echo "site inventory:"; (cd "$SITE" && find . -type f | sort)
+      - name: Refuse to publish anything that looks like a key
+        run: |
+          set +e
+          hits=$(grep -rIlE \
+            -e 'sk-or-v1-[A-Za-z0-9]{8,}' \
+            -e 'sk-ant-[A-Za-z0-9_-]{8,}' \
+            -e 'sk-proj-[A-Za-z0-9_-]{8,}' \
+            -e 'AKIA[0-9A-Z]{16}' \
+            -e 'gh[pousr]_[A-Za-z0-9]{20,}' \
+            -e '^[[:space:]]*(export[[:space:]]+)?(OPENROUTER_API_KEY|LITELLM_API_KEY|ANTHROPIC_API_KEY|OPENAI_API_KEY|GITHUB_TOKEN)[[:space:]]*=[[:space:]]*["'"'"']?[A-Za-z0-9_-]{12,}' \
+            "${RUNNER_TEMP}/site" 2>&1); rc=$?
+          if [ $rc -eq 0 ]; then echo "::error::these files look like they contain an API key; nothing was published"; echo "$hits"; exit 1; fi
+          if [ $rc -ne 1 ]; then echo "::error::key scan failed: $hits"; exit 1; fi
+          echo "no keys found"
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: _site
+          path: ${{ runner.temp }}/site
 
   deploy:
     if: github.repository != 'agentic-systems-fall-2026/agentic-systems-course-fall-2026'
     needs: build
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
