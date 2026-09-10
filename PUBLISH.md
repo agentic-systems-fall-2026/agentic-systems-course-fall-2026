@@ -24,8 +24,12 @@ site serves that exact commit, and prints one line:
 
     PUBLISHED: https://agentic-systems-fall-2026.github.io/<your-repo-name>/bc0-space-invaders/
 
-Paste that address into the Canvas assignment together with your repository
-link. Open it on your phone or another laptop first to confirm it works.
+Open that address on your phone or another laptop before you paste it
+anywhere, and check that the page is your build. A page that loads is not the
+same as the right page. If the agent cannot find your build it should tell you
+so and stop; if it ever publishes something you did not make, that is a bug
+and I want to hear about it. Then paste the address into the Canvas assignment
+together with your repository link.
 
 ## Do it yourself instead
 

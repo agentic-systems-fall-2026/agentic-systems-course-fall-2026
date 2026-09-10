@@ -31,7 +31,9 @@ made in this workspace usually live under `~/.openclaw/workspace/`.
    build often sits in a folder of the user's own naming (`bc0-invaders`,
    `projects/space-invaders`, and so on). The script searches both places
    too, so running it without a source is a reasonable first attempt. Ask
-   the user only if two candidates look equally likely.
+   the user only if two candidates look equally likely. A folder counts only
+   if it is the build the user asked for. A different build challenge's
+   folder is not a candidate, however similar the files look.
 2. Run the script with the target and that folder, for example:
 
        bash /workspaces/my-course-repo/scripts/publish.sh bc0-space-invaders ~/.openclaw/workspace/space-invaders
@@ -42,9 +44,10 @@ made in this workspace usually live under `~/.openclaw/workspace/`.
 3. Wait for it to finish (up to five minutes). It copies the build into the
    repository folder, commits only that folder, pulls, pushes, and waits
    until the site serves that exact commit. It ends with one of:
-   - `PUBLISHED: <url>` (exit 0): done. Report the line verbatim and tell
-     the user to paste the URL into the Canvas assignment with the
-     repository link.
+   - `PUBLISHED: <url>` (exit 0): done. Report the line verbatim, say which
+     folder you published from, and tell the user to open the URL and check
+     that it is their build before pasting it into the Canvas assignment
+     with the repository link.
    - `PENDING: <url>` (exit 8): NOT done. Tell the user the publish has not
      finished, show the script's explanation, and suggest
      `gh run list --workflow pages.yml`. Do not call it ready to submit.
@@ -70,4 +73,16 @@ made in this workspace usually live under `~/.openclaw/workspace/`.
   folder (`dist/` or `build/`) instead.
 - Pages serves static files only. An app that needs a server or an API key
   at runtime will not work there; say so rather than publishing it.
+- Never create, scaffold, generate, or copy in a build in order to make a
+  publish succeed. Do not copy files from another target's folder, do not
+  write a placeholder page, and do not create a new project or page because
+  the requested folder is empty or missing. Running an existing project's own
+  build step, as described above, is fine; making a build that did not exist
+  is not. Publishing is for work the user has already made.
+- If you cannot find a build for the target the user named, stop and say so
+  plainly: name the target, say where you looked, and ask where their build
+  is. Reporting that there is nothing to publish is the correct outcome and
+  is more useful than a published page the user did not make. A published
+  URL that does not contain the user's own work is a worse failure than no
+  URL at all, because it looks finished and gets submitted.
 - Do not edit `scripts/publish.sh`.
