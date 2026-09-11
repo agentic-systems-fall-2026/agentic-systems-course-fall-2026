@@ -16,6 +16,8 @@
 # serves this exact commit, and prints one line:  PUBLISHED: <url>
 # If the site is not serving this commit after a few minutes it prints
 # PENDING: <url> and exits 8; that is not a finished publish.
+# It refuses (exit 9) to publish a build that is an exact copy of another
+# challenge's build, because that is never a real submission.
 # Only folders that contain an index.html are ever published, and *.md files
 # inside them are stripped on the way, so prompts, notes, and the person file
 # for Build Challenge 0b stay private. The repository itself stays private.
@@ -52,6 +54,38 @@ scan_for_keys() {
   set -e
   printf '%s' "${out}"
   return ${rc}
+}
+
+# Fingerprint the files a folder would publish, using the same filter as the
+# workflow (no *.md, no .env*, no node_modules or .git), so an identical copy of
+# another challenge's build can be recognised.
+tree_digest() {
+  local dir="$1" h
+  if command -v sha256sum >/dev/null 2>&1; then h="sha256sum"; else h="shasum -a 256"; fi
+  (cd "${dir}" && LC_ALL=C find . -type f -not -iname '*.md' -not -iname '.env*' \
+      -not -path '*/node_modules/*' -not -path '*/.git/*' -print | LC_ALL=C sort \
+    | while IFS= read -r f; do printf '%s  %s\n' "$(${h} "$f" | cut -d' ' -f1)" "$f"; done) \
+    | ${h} | cut -d' ' -f1
+}
+
+# Refuse when the build about to go out as TARGET is byte for byte the build
+# another challenge already publishes. That is never a legitimate submission,
+# and it is exactly what an agent produces when it invents a build to make a
+# publish succeed.
+refuse_duplicate() {
+  local dir="$1" mine other t
+  mine="$(tree_digest "${dir}")"
+  for t in ${ALLOWED}; do
+    [[ "${t}" == "${TARGET}" ]] && continue
+    [[ -f "${ROOT}/${t}/index.html" ]] || continue
+    other="$(tree_digest "${ROOT}/${t}")"
+    if [[ "${mine}" == "${other}" ]]; then
+      echo "publish.sh: refusing to publish. The build for ${TARGET} is an exact copy of ${t}/, which is a different build challenge." >&2
+      echo "Each challenge needs its own build. If the ${TARGET} build has not been made yet, there is nothing to publish for it." >&2
+      echo "Nothing in the repository was changed." >&2
+      exit 9
+    fi
+  done
 }
 
 # Make the OpenClaw agent aware of this script (idempotent, best effort).
@@ -192,6 +226,7 @@ if [[ -n "${SRC}" ]]; then
       rm -rf "${stage}"
       fail "the key scan failed (grep exit ${stage_rc}): ${stage_hits}. Nothing in the repository was changed." 5
     fi
+    refuse_duplicate "${stage}"
     mkdir -p "${dest}"
     # Remove only what the last publish put here and this one does not, so a file
     # you deleted while building leaves the site, while your source tree, your
@@ -234,6 +269,8 @@ if find "${ROOT}/${TARGET}" -type l -not -path '*/node_modules/*' 2>/dev/null | 
   exit 4
 fi
 [[ -f "${ROOT}/${TARGET}/index.html" ]] || fail "${TARGET}/index.html does not exist. Put the build's index.html (and its files) in ${TARGET}/, or pass the folder it lives in as the second argument." 4
+
+refuse_duplicate "${ROOT}/${TARGET}"
 
 # ---- Refuse anything that looks like a key ------------------------------------
 # Keys live in Codespaces secrets, never in files. A scanner error is a stop, not a pass.

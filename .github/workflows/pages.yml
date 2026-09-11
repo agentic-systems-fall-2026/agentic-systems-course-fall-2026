@@ -78,6 +78,24 @@ jobs:
             echo "::error::non-regular files in the site tree"; find "$SITE" -not -type f -not -type d; exit 1
           fi
           echo "site inventory:"; (cd "$SITE" && find . -type f | sort)
+      - name: Refuse two challenges publishing the same build
+        run: |
+          set -euo pipefail
+          SITE="${RUNNER_TEMP}/site"
+          declare -A seen
+          for d in "$SITE"/*/; do
+            [ -d "$d" ] || continue
+            n=$(basename "$d")
+            h=$(cd "$d" && LC_ALL=C find . -type f -print | LC_ALL=C sort \
+                | while IFS= read -r f; do printf '%s  %s\n' "$(sha256sum "$f" | cut -d' ' -f1)" "$f"; done \
+                | sha256sum | cut -d' ' -f1)
+            if [ -n "${seen[$h]:-}" ]; then
+              echo "::error::$n is an exact copy of ${seen[$h]}; each build challenge needs its own build, so nothing is published"
+              exit 1
+            fi
+            seen[$h]="$n"
+          done
+          echo "no duplicated builds"
       - name: Refuse to publish anything that looks like a key
         run: |
           set +e
