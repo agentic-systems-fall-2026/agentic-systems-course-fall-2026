@@ -79,5 +79,12 @@
     }
   },
 
+  // Lets `from common.llm import ...` work from any folder in every terminal and
+  // task. Codespaces created before this line get the same thing from
+  // scripts/ensure-pythonpath.sh the next time they start after a git pull.
+  "remoteEnv": {
+    "PYTHONPATH": "${containerWorkspaceFolder}"
+  },
+
   "remoteUser": "node"
 }

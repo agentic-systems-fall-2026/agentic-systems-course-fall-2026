@@ -6,6 +6,7 @@ export PATH="/usr/local/share/npm-global/bin:/usr/local/share/nvm/current/bin:${
 set -uo pipefail
 # Extra, image-agnostic resolution (best effort; never fatal).
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_env.sh" 2>/dev/null || true
+bash "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/ensure-pythonpath.sh" >/dev/null 2>&1 || true
 
 STATUS="${HOME}/.openclaw/.preflight"
 HEALTH="http://127.0.0.1:18789/healthz"

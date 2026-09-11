@@ -66,6 +66,7 @@ EOF
 else
   echo "PATH block already present — nothing to do."
 fi
+bash "${REPO_DIR}/scripts/ensure-pythonpath.sh" || true
 
 step "Install 3/4 — Python tooling (pytest for BC4's eval gate; flask for demo UIs; tavily-python for Ship Day search)"
 (python3 -m pip --version >/dev/null 2>&1 || sudo apt-get update -qq && sudo apt-get install -y -qq python3-pip) || true

@@ -17,6 +17,7 @@ set -euo pipefail
 
 TEMPLATE_URL="https://github.com/agentic-systems-fall-2026/agentic-systems-course-fall-2026.git"
 cd "$(git rev-parse --show-toplevel)"
+[ -f scripts/ensure-pythonpath.sh ] && bash scripts/ensure-pythonpath.sh || true
 
 PUSH=0; ALL=0; PATHS=()
 for a in "$@"; do

@@ -11,6 +11,7 @@ export PATH="/usr/local/share/npm-global/bin:/usr/local/share/nvm/current/bin:${
 set -uo pipefail
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_env.sh" 2>/dev/null || true
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+bash "${REPO_DIR}/scripts/ensure-pythonpath.sh" >/dev/null 2>&1 || true
 
 mkdir -p "${HOME}/.openclaw"
 LOG="${HOME}/.openclaw/gateway.log"

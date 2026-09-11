@@ -27,5 +27,15 @@ if ! command -v openclaw >/dev/null 2>&1; then
   fi
   unset _oc
 fi
+# Let course Python scripts `from common.llm import ...` from any folder, in task
+# shells and in commands the agent runs (the gateway process inherits this).
+_REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." 2>/dev/null && pwd)"
+if [ -n "${_REPO_ROOT}" ] && [ -d "${_REPO_ROOT}/common" ]; then
+  case ":${PYTHONPATH:-}:" in
+    *":${_REPO_ROOT}:"*) : ;;
+    *) export PYTHONPATH="${_REPO_ROOT}${PYTHONPATH:+:${PYTHONPATH}}" ;;
+  esac
+fi
+unset _REPO_ROOT
 export PATH
 unset _d _NVM_DIR
