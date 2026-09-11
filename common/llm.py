@@ -29,6 +29,31 @@ import urllib.request
 # Endpoint precedence must match scripts/preflight.sh and scripts/configure.sh:
 # OpenRouter is the course standard, the OU AI Sandbox is the no-cost
 # alternative. Defaults are matched in class across both.
+def _saved_keys() -> dict:
+    """Keys saved by scripts/set-key.sh or configure.sh in ~/.openclaw/.env.
+
+    The agent reads that file, so a key entered with set-key.sh works for the
+    agent even when it was never set as a Codespaces secret. Read it here too,
+    so plain Python scripts see the same key. Environment variables still win.
+    """
+    saved = {}
+    env_file = pathlib.Path.home() / ".openclaw" / ".env"
+    try:
+        for line in env_file.read_text().splitlines():
+            name, sep, value = line.strip().partition("=")
+            if sep and name in ("OPENROUTER_API_KEY", "LITELLM_API_KEY"):
+                value = value.strip().strip('"').strip("'")
+                if value and "REPLACE_ME" not in value:
+                    saved[name] = value
+    except OSError:
+        pass
+    return saved
+
+
+for _name, _value in _saved_keys().items():
+    if not os.environ.get(_name) or "REPLACE_ME" in os.environ.get(_name, ""):
+        os.environ[_name] = _value
+
 _OR_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 _LL_KEY = os.environ.get("LITELLM_API_KEY", "")
 if _OR_KEY and _OR_KEY != "sk-or-REPLACE_ME":
@@ -51,7 +76,8 @@ def _key() -> str:
     if not key:
         raise RuntimeError(
             f"{_KEY_VAR} is not set. In a Codespace it comes from your "
-            "Codespaces secret; in GitHub Actions, from a repository secret."
+            "Codespaces secret or from bash scripts/set-key.sh; in GitHub "
+            "Actions, from a repository secret."
         )
     return key
 
@@ -76,13 +102,14 @@ def chat(messages, model=DEFAULT_MODEL, max_tokens=700, temperature=0,
             STATS["cache_hits"] += 1
             return json.loads(slot.read_text())["text"]
 
+    key = _key()  # a missing key is a setup problem; say so now, do not retry it
     last = None
     for attempt in range(retries + 1):
         for base in (BASE + "/v1", BASE):
             try:
                 req = urllib.request.Request(
                     base + "/chat/completions", data=raw,
-                    headers={"Authorization": "Bearer " + _key(),
+                    headers={"Authorization": "Bearer " + key,
                              "Content-Type": "application/json"})
                 resp = json.load(urllib.request.urlopen(req, timeout=timeout))
                 text = resp["choices"][0]["message"]["content"]
