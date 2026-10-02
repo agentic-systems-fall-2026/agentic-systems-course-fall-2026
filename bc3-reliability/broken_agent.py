@@ -30,17 +30,23 @@ import sys
 import urllib.request
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
-from common.llm import _key, BASE, DEFAULT_MODEL  # noqa: using internals is a smell, too
+from common.llm import _key, BASE, DEFAULT_MODEL, PROVIDER  # noqa: using internals is a smell, too
 
 HERE = pathlib.Path(__file__).resolve().parent
 REPORT = HERE / "approved_report.md"
 
 
 def classify(text):
-    body = json.dumps({"model": DEFAULT_MODEL, "temperature": 0, "max_tokens": 200,
-                       "messages": [{"role": "user", "content":
-                                     'Classify this change request. Reply ONLY with JSON '
-                                     '{"risk": "low|medium|high", "reason": "<one line>"}\n\n' + text}]})
+    payload = {"model": DEFAULT_MODEL, "temperature": 0, "max_tokens": 700,
+               "messages": [{"role": "user", "content":
+                             'Classify this change request. Reply ONLY with JSON '
+                             '{"risk": "low|medium|high", "reason": "<one line>"}\n\n' + text}]}
+    if PROVIDER == "OpenRouter":
+        # The default gemini flash model reasons before it answers, and those tokens
+        # count against max_tokens. Uncapped, they used up a 200-token budget and the
+        # JSON came back cut off on every item (finish_reason: length). Not a planted flaw.
+        payload["reasoning"] = {"effort": "low"}
+    body = json.dumps(payload)
     req = urllib.request.Request(BASE + "/v1/chat/completions", data=body.encode(),
                                  headers={"Authorization": "Bearer " + _key(),
                                           "Content-Type": "application/json"})

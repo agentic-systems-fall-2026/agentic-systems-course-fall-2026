@@ -1,4 +1,4 @@
-# Build Challenge 3 — Reliability & Rollback (50 pts, due Tue Jul 21, 11:59 PM CT)
+# Build Challenge 3 — Reliability & Rollback (50 pts, due Fri Oct 2, 11:59 PM CT)
 
 **Objective.** Start from the provided broken-agent skeleton: diagnose its
 failure modes, then add retries, timeouts, fallbacks, and a harness with a
@@ -24,8 +24,8 @@ the categories; find them in the code).
    good report), and a checkpoint file so a restart resumes where it left off
    without re-spending tokens.
 3. **Demonstrate recovery twice:** (a) kill/stop the Codespace mid-run and
-   show it resumes correctly; (b) inject one failure (e.g., point BASE at a
-   bad URL for a few items, or corrupt a model reply) and show the harness
+   show it resumes correctly; (b) inject one failure (e.g., point OPENROUTER_BASE_URL, or
+   LITELLM_BASE_URL if you have no OpenRouter key, at a bad URL for a few items, or corrupt a model reply) and show the harness
    handles it and the report stays valid. A helper is provided for the failure
    injection: `python3 bc3-reliability/hang-server.py` stands up a local
    endpoint that hangs, resets, stalls, or returns junk on demand (run it

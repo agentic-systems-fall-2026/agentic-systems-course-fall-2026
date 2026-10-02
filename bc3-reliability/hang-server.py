@@ -20,7 +20,8 @@ Usage
   python3 hang-server.py --port 9099
 
 Then, in another terminal, aim your agent at it, e.g.:
-  BASE=http://127.0.0.1:9099 python3 fixed_agent.py
+  OPENROUTER_BASE_URL=http://127.0.0.1:9099 python3 bc3-reliability/fixed_agent.py
+  (use LITELLM_BASE_URL instead only if you have no OpenRouter key)
 
 Binds to 127.0.0.1 only, so it is never exposed off-box. Stop it with Ctrl-C.
 This is a testing aid, not part of the graded agent - keep your fix in
@@ -100,7 +101,7 @@ def main():
 
     detail = f" (delay {args.delay:g}s)" if args.mode == "slow" else ""
     print(f"hang-server: mode={args.mode}{detail}  listening on http://{args.host}:{args.port}")
-    print(f"point your agent at it, e.g.  BASE=http://{args.host}:{args.port} python3 fixed_agent.py")
+    print(f"point your agent at it, e.g.  OPENROUTER_BASE_URL=http://{args.host}:{args.port} python3 bc3-reliability/fixed_agent.py   (LITELLM_BASE_URL if you have no OpenRouter key)")
     print("Ctrl-C to stop.")
     try:
         while True:
