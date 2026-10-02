@@ -1,4 +1,4 @@
-# Build Challenge 3 — Reliability & Rollback (50 pts, due Fri Oct 2, 11:59 PM CT)
+# Build Challenge 3 — Reliability & Rollback (50 pts, due Tue Oct 6, 11:59 PM CT)
 
 **Objective.** Start from the provided broken-agent skeleton: diagnose its
 failure modes, then add retries, timeouts, fallbacks, and a harness with a
