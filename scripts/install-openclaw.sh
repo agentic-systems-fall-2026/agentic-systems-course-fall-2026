@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# Install OpenClaw via the OFFICIAL installer (openclaw.ai/install.sh).
-# NOTE: the npm package literally named "openclaw" on the public registry is a
-# 0.0.0 placeholder stub — do NOT `npm install -g openclaw`.
+# Install OpenClaw via the OFFICIAL installer (openclaw.ai/install.sh), falling
+# back to npm for the pinned version if the installer refuses (see the end).
+# NOTE: never run a bare, unpinned `npm install -g openclaw`; integrity_ok below
+# rejects a 0.0.0 placeholder or any version other than the pin.
 #
 # The official installer occasionally leaves an INCOMPLETE package (its first npm
 # attempt fails, the retry installs over a partial dir / poisoned cache → a
@@ -70,6 +71,24 @@ for attempt in 1 2 3; do
   echo "   install looked incomplete (missing module / stub) — cleaning and retrying…"
 done
 
-echo "✗ OpenClaw install failed after 3 clean attempts."
-echo "  Manual: npm rm -g openclaw; npm cache clean --force; curl -fsSL https://openclaw.ai/install.sh | bash -s -- --no-onboard --no-prompt --version ${OPENCLAW_VERSION_PIN}"
+# Fallback: install the pinned release straight from npm. Checked 2026-11-05:
+# the official installer now enforces the Node requirement of OpenClaw's LATEST
+# release (Node 24.16+ or 26.1+) even when --version pins an older one, so it
+# stops on this image's Node 22, although 2026.6.34 itself needs only Node
+# 22.19+. npm installs the real pinned release, and integrity_ok verifies it.
+echo "==> Official installer did not produce a working OpenClaw; installing openclaw@${OPENCLAW_VERSION_PIN} from npm…"
+npm rm -g openclaw >/dev/null 2>&1 || true
+NGR="$(npm root -g 2>/dev/null || true)"
+[ -n "${NGR}" ] && rm -rf "${NGR}/openclaw" "${NGR}"/.openclaw-* 2>/dev/null || true
+npm install -g "openclaw@${OPENCLAW_VERSION_PIN}" || true
+# shellcheck disable=SC1091
+source "${HERE}/_env.sh" 2>/dev/null || true
+hash -r
+if integrity_ok; then
+  echo "✓ OpenClaw installed from npm and verified: $(openclaw --version 2>/dev/null)"
+  exit 0
+fi
+
+echo "✗ OpenClaw install failed (3 installer attempts plus an npm install)."
+echo "  Manual: npm rm -g openclaw; npm cache clean --force; npm install -g openclaw@${OPENCLAW_VERSION_PIN}"
 exit 1
