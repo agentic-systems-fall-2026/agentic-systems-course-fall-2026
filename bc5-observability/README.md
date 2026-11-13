@@ -1,4 +1,4 @@
-# Build Challenge 5 — Observability & Oversight (50 pts, due Wed Jul 29, 11:59 PM CT)
+# Build Challenge 5 — Observability & Oversight (50 pts, due Fri Nov 20, 11:59 PM CT)
 
 **Objective.** Instrument your agent stack (OpenClaw gateway + your code)
 with logging/tracing, add human-in-the-loop checkpoints, and pull cost/usage
